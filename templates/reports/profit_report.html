@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}লাভ-ক্ষতির রিপোর্ট — Lotus Footwear{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📊 লাভ-ক্ষতির রিপোর্ট</h2>
+    <p class="text-muted">Profit &amp; Loss Report</p>
+</div>
+
+{% include 'partials/messages.html' ignore missing %}
+
+<!-- Date Range Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label for="start_date" class="form-label fw-bold">শুরুর তারিখ</label>
+                <input type="date" id="start_date" name="start_date" class="form-control"
+                       value="{{ start_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div class="col-auto">
+                <label for="end_date" class="form-label fw-bold">শেষ তারিখ</label>
+                <input type="date" id="end_date" name="end_date" class="form-control"
+                       value="{{ end_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">রিপোর্ট দেখুন</button>
+            </div>
+            <div class="col-auto text-muted small align-self-end pb-2">
+                {{ start_date|date:"d M Y" }} — {{ end_date|date:"d M Y" }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <div class="stat-label">মোট বিক্রয় (নেট)</div>
+                <div class="stat-value text-primary">৳ {{ financial.net_sales|floatformat:0 }}</div>
+                <div class="text-muted small">{{ financial.total_invoices }} চালান · {{ financial.total_pairs_sold }} জোড়া</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-warning">
+            <div class="card-body">
+                <div class="stat-label">মোট ক্রয়মূল্য (COGS)</div>
+                <div class="stat-value text-warning">৳ {{ financial.cogs|floatformat:0 }}</div>
+                <div class="text-muted small">পণ্যের মূল খরচ</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-info">
+            <div class="card-body">
+                <div class="stat-label">মোট খরচ (Expenses)</div>
+                <div class="stat-value text-info">৳ {{ financial.total_expenses|floatformat:0 }}</div>
+                <div class="text-muted small">দোকানের পরিচালনা খরচ</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        {% if financial.net_profit >= 0 %}
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <div class="stat-label">নিট লাভ (Net Profit)</div>
+                <div class="stat-value text-success">৳ {{ financial.net_profit|floatformat:0 }}</div>
+                <div class="text-muted small">মার্জিন: {{ financial.net_margin|floatformat:1 }}%</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card text-center border-danger">
+            <div class="card-body">
+                <div class="stat-label">নিট ক্ষতি (Net Loss)</div>
+                <div class="stat-value text-danger">৳ {{ financial.net_profit|floatformat:0 }}</div>
+                <div class="text-muted small">মার্জিন: {{ financial.net_margin|floatformat:1 }}%</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Detailed P&L Table -->
+<div class="card">
+    <div class="card-header fw-bold">বিস্তারিত হিসাব</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <tbody>
+                <tr class="table-light">
+                    <th colspan="2" class="px-3 py-2">বিক্রয় হিসাব (Revenue)</th>
+                </tr>
+                <tr>
+                    <td class="ps-4">মোট বিক্রয় (ডিসকাউন্টের আগে)</td>
+                    <td class="text-end pe-3">৳ {{ financial.gross_revenue|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="ps-4">মোট ডিসকাউন্ট</td>
+                    <td class="text-end pe-3 text-danger">— ৳ {{ financial.total_discounts|floatformat:0 }}</td>
+                </tr>
+                <tr class="fw-semibold">
+                    <td class="ps-4">নেট বিক্রয়</td>
+                    <td class="text-end pe-3">৳ {{ financial.net_sales|floatformat:0 }}</td>
+                </tr>
+
+                <tr class="table-light">
+                    <th colspan="2" class="px-3 py-2">পণ্যের খরচ (Cost of Goods Sold)</th>
+                </tr>
+                <tr>
+                    <td class="ps-4">COGS (ভারিত গড় খরচ)</td>
+                    <td class="text-end pe-3 text-danger">— ৳ {{ financial.cogs|floatformat:0 }}</td>
+                </tr>
+                <tr class="fw-semibold">
+                    <td class="ps-4">গ্রস লাভ (Gross Profit)</td>
+                    <td class="text-end pe-3 {% if financial.gross_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        ৳ {{ financial.gross_profit|floatformat:0 }}
+                        <span class="text-muted small">({{ financial.gross_margin|floatformat:1 }}%)</span>
+                    </td>
+                </tr>
+
+                <tr class="table-light">
+                    <th colspan="2" class="px-3 py-2">পরিচালনা খরচ (Operating Expenses)</th>
+                </tr>
+                <tr>
+                    <td class="ps-4">দোকানের মোট খরচ</td>
+                    <td class="text-end pe-3 text-danger">— ৳ {{ financial.total_expenses|floatformat:0 }}</td>
+                </tr>
+
+                <tr class="table-{% if financial.net_profit >= 0 %}success{% else %}danger{% endif %} fw-bold fs-5">
+                    <td class="ps-4 py-3">
+                        {% if financial.net_profit >= 0 %}নিট লাভ{% else %}নিট ক্ষতি{% endif %}
+                    </td>
+                    <td class="text-end pe-3 py-3">৳ {{ financial.net_profit|floatformat:0 }}</td>
+                </tr>
+
+                <tr class="table-light">
+                    <th colspan="2" class="px-3 py-2">অন্যান্য তথ্য</th>
+                </tr>
+                <tr>
+                    <td class="ps-4">নগদ প্রাপ্ত</td>
+                    <td class="text-end pe-3">৳ {{ financial.cash_received|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="ps-4">বাকি বিক্রয় (Due)</td>
+                    <td class="text-end pe-3 text-warning">৳ {{ financial.total_due|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="ps-4">মোট রিটার্ন</td>
+                    <td class="text-end pe-3 text-danger">৳ {{ financial.total_returns|floatformat:0 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

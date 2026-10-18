@@ -15,7 +15,7 @@ from inventory.views import (
     csv_migration_view, download_csv_template_view
 )
 from expenses.views import expenses_list_view, add_expense_view
-from reports.views import admin_dashboard_view, historical_search_view
+from reports.views import admin_dashboard_view, historical_search_view, profit_report_view
 from backup_system.views import backup_center_view, trigger_manual_backup_view, restore_backup_view
 
 urlpatterns = [
@@ -54,6 +54,7 @@ urlpatterns = [
     # Reports & Dashboards
     path('admin-dashboard/', admin_dashboard_view, name='admin_dashboard'),
     path('reports/historical-search/', historical_search_view, name='historical_search'),
+    path('reports/profit/', profit_report_view, name='reports_profit'),
 
     # Backup & Recovery
     path('backups/', backup_center_view, name='backup_center'),

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Sum
 from .models import Expense, ExpenseCategory
 from core.models import BusinessDay
 
@@ -11,7 +12,8 @@ def expenses_list_view(request):
     expenses = Expense.objects.select_related('category').all().order_by('-expense_date', '-id')
     categories = ExpenseCategory.objects.all()
 
-    total_expenses = sum(e.amount for e in expenses[:100])
+    # Aggregate total across the full queryset (not just the first 100)
+    total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0')
 
     return render(request, 'expenses/expenses_list.html', {
         'expenses': expenses[:100],

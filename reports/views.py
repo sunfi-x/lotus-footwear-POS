@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -70,4 +70,40 @@ def historical_search_view(request):
     return render(request, 'reports/historical_search.html', {
         'searched_code': code,
         'results': results,
+    })
+
+
+@login_required
+def profit_report_view(request):
+    """Standalone profit & loss report with custom date range selection."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        messages.error(request, "শুধুমাত্র এডমিন লাভ-ক্ষতির রিপোর্ট দেখতে পারেন।")
+        return redirect('home')
+
+    today = timezone.localdate()
+
+    # Parse user-supplied date range (defaults to current calendar month)
+    start_str = request.GET.get('start_date', '')
+    end_str   = request.GET.get('end_date', '')
+
+    try:
+        start_date = datetime.strptime(start_str, '%Y-%m-%d').date() if start_str else None
+        end_date   = datetime.strptime(end_str,   '%Y-%m-%d').date() if end_str   else None
+    except ValueError:
+        messages.warning(request, "তারিখের বিন্যাস সঠিক নয় (YYYY-MM-DD)। ডিফল্ট ব্যবহার করা হয়েছে।")
+        start_date = end_date = None
+
+    if not start_date or not end_date:
+        start_date, end_date = ReportingService.get_calendar_month_range(today.year, today.month)
+
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    financial = ReportingService.get_financial_report(start_date, end_date)
+
+    return render(request, 'reports/profit_report.html', {
+        'financial': financial,
+        'start_date': start_date,
+        'end_date': end_date,
+        'today': today,
     })
