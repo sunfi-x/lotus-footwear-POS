@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}জুতার স্টক ও প্রোডাক্টস - Lotus Footwear{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div>
+        <h1 style="font-size: 1.5rem; color: #1e293b;">জুতার প্রোডাক্ট ও স্টক তালিকা (Products & Inventory)</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">সকল মডেল, সাইজ, কালার, বর্তমান মজুদ স্টক ও গড় ক্রয়মূল্য (WAC)</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <button type="button" onclick="openNewProductModal()" class="btn btn-primary btn-sm">+ নতুন জুতার মডেল যোগ করুন</button>
+        <button type="button" onclick="openNewVariantModal()" class="btn btn-secondary btn-sm">+ নতুন সাইজ/কালার ভ্যারিয়েন্ট</button>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div style="background: #ffffff; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 1.25rem;">
+    <form method="GET" style="display: flex; gap: 1rem;">
+        <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="জুতার কোড বা মডেল নাম দিয়ে সার্চ করুন (যেমন: M0001, Oxford, Heel)...">
+        <button type="submit" class="btn btn-primary">অনুসন্ধান</button>
+        <a href="{% url 'products_list' %}" class="btn btn-secondary">সব দেখুন</a>
+    </form>
+</div>
+
+<!-- Products Table -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>জুতার কোড</th>
+                <th>মডেল ও বিবরণ</th>
+                <th>সাইজ</th>
+                <th>কালার</th>
+                <th>SKU</th>
+                <th>বর্তমান স্টক</th>
+                <th>গড় ক্রয়মূল্য (WAC)</th>
+                <th>বিক্রয় দর</th>
+                <th>স্টক স্ট্যাটাস</th>
+                <th>অ্যাকশন</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for variant in variants %}
+            <tr>
+                <td><strong>{{ variant.product.code }}</strong></td>
+                <td>{{ variant.product.name }}</td>
+                <td><span class="day-badge day-open">{{ variant.size }}</span></td>
+                <td>{{ variant.colour }}</td>
+                <td><code>{{ variant.sku }}</code></td>
+                <td>
+                    <strong style="font-size: 1.05rem; {% if variant.current_stock <= 0 %}color: #b91c1c;{% elif variant.current_stock < 5 %}color: #b45309;{% else %}color: #15803d;{% endif %}">
+                        {{ variant.current_stock }} জোড়া
+                    </strong>
+                </td>
+                <td>৳ {{ variant.weighted_avg_cost|intcomma }}</td>
+                <td>৳ {{ variant.standard_selling_price|intcomma }}</td>
+                <td>
+                    {% if variant.current_stock <= 0 %}
+                        <span class="day-badge day-closed">স্টক শেষ</span>
+                    {% elif variant.current_stock < 5 %}
+                        <span class="day-badge" style="background: #fef3c7; color: #b45309;">কম স্টক</span>
+                    {% else %}
+                        <span class="day-badge day-open">পর্যাপ্ত</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button type="button" onclick="openStockAdjustModal('{{ variant.id }}', '{{ variant.sku }}', '{{ variant.current_stock }}')" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.8rem;">
+                        ⚙️ স্টক সমন্বয়
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    কোনো জুতার রেকর্ড পাওয়া যায়নি। উপরের বাটনে ক্লিক করে নতুন মডেল যোগ করুন অথবা CSV ফাইল থেকে ইমপোর্ট করুন।
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Stock Adjustment Modal -->
+<div id="stock-adjust-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'adjust_stock' %}">
+            {% csrf_token %}
+            <input type="hidden" name="variant_id" id="adj-variant-id">
+            <div class="modal-header">
+                <h3 style="color: #1e3a8a;">⚙️ জুতার স্টক সমন্বয় (Stock Adjustment)</h3>
+                <button type="button" onclick="closeStockAdjustModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>ভ্যারিয়েন্ট: <strong id="adj-sku"></strong></p>
+                <p>সিস্টেমের বর্তমান রেকর্ড: <strong id="adj-old-stock" style="color: #1e3a8a;"></strong> জোড়া</p>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="form-label">দোকানে গুনে পাওয়া প্রকৃত নতুন স্টক (New Physical Stock):</label>
+                    <input type="number" name="new_stock" id="adj-new-stock" class="form-control" required min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">সমন্বয়ের সুনির্দিষ্ট কারণ (Mandatory Reason):</label>
+                    <textarea name="reason" class="form-control" rows="3" required placeholder="যেমন: দোকানে জুতা গণনার পর ১ জোড়া বাড়তি পাওয়া গেছে..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeStockAdjustModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" class="btn btn-primary">✓ স্টক হালনাগাদ করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Product Model Modal -->
+<div id="new-product-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'add_product' %}">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h3 style="color: #1e3a8a;">+ নতুন জুতার মডেল যোগ করুন</h3>
+                <button type="button" onclick="closeNewProductModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">প্রোডাক্ট / জুতার কোড (Product Code):</label>
+                    <input type="text" name="code" class="form-control" placeholder="যেমন: M0001, L200" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">জুতার নাম বা মডেল (Model Name):</label>
+                    <input type="text" name="name" class="form-control" placeholder="যেমন: Formal Leather Oxford" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ক্যাটাগরি:</label>
+                    <input type="text" name="category" class="form-control" value="Men">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ব্র্যান্ড:</label>
+                    <input type="text" name="brand" class="form-control" value="Lotus">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeNewProductModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" class="btn btn-primary">সংরক্ষণ করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Variant Modal -->
+<div id="new-variant-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'add_variant' %}">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h3 style="color: #1e3a8a;">+ নতুন সাইজ ও কালার ভ্যারিয়েন্ট যোগ করুন</h3>
+                <button type="button" onclick="closeNewVariantModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">জুতার মূল মডেল:</label>
+                    <select name="product_id" class="form-control" required>
+                        <option value="">-- মডেল সিলেক্ট করুন --</option>
+                        {% for prod in products %}
+                            <option value="{{ prod.id }}">{{ prod.code }} - {{ prod.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">সাইজ (Size):</label>
+                    <input type="text" name="size" class="form-control" placeholder="যেমন: 39, 40, 41, 42 বা 7, 8" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">কালার (Colour):</label>
+                    <input type="text" name="colour" class="form-control" placeholder="যেমন: Black, Brown, Tan" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">প্রাথমিক বিক্রয় দর (Selling Price):</label>
+                    <input type="number" step="0.01" name="selling_price" class="form-control" value="0.00" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeNewVariantModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" class="btn btn-primary">ভ্যারিয়েন্ট তৈরি করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openStockAdjustModal(id, sku, currentStock) {
+        document.getElementById('adj-variant-id').value = id;
+        document.getElementById('adj-sku').textContent = sku;
+        document.getElementById('adj-old-stock').textContent = currentStock;
+        document.getElementById('adj-new-stock').value = currentStock;
+        document.getElementById('stock-adjust-modal').style.display = 'flex';
+    }
+    function closeStockAdjustModal() {
+        document.getElementById('stock-adjust-modal').style.display = 'none';
+    }
+    function openNewProductModal() {
+        document.getElementById('new-product-modal').style.display = 'flex';
+    }
+    function closeNewProductModal() {
+        document.getElementById('new-product-modal').style.display = 'none';
+    }
+    function openNewVariantModal() {
+        document.getElementById('new-variant-modal').style.display = 'flex';
+    }
+    function closeNewVariantModal() {
+        document.getElementById('new-variant-modal').style.display = 'none';
+    }
+</script>
+{% endblock %}

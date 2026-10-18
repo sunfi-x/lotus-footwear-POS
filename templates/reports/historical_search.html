@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}কোড দিয়ে ঐতিহাসিক বিক্রয় অনুসন্ধান - Lotus Footwear{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div>
+        <h1 style="font-size: 1.5rem; color: #1e293b;">জুতার কোড দিয়ে ঐতিহাসিক বিক্রয় অনুসন্ধান (Historical Sale Search)</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+            যেকোনো বর্তমান বা পুরোনো মডেলের কোড দিয়ে বিগত সকল বিক্রয়, লাভ এবং আসল বিক্রয়মূল্য পর্যালোচনা করুন।
+        </p>
+    </div>
+</div>
+
+<!-- Search Form Card -->
+<div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <form method="GET" style="display: flex; gap: 1rem; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0; flex: 1; max-width: 400px;">
+            <label class="form-label">জুতার মডেল / প্রোডাক্ট কোড (Product Code):</label>
+            <input type="text" name="code" class="form-control" value="{{ searched_code }}" placeholder="যেমন: M0001, L-102" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 42px;">🔍 সম্পূর্ণ হিস্ট্রি অনুসন্ধান</button>
+    </form>
+</div>
+
+{% if searched_code %}
+    {% if results.lines %}
+        <!-- Summary Matrix for Searched Model -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="label">অনুসন্ধানকৃত জুতার কোড</div>
+                <div class="value" style="color: #1e3a8a;">{{ results.product_code }}</div>
+            </div>
+            <div class="stat-card success">
+                <div class="label">সর্বমোট বিক্রিত জোড়া (Lifetime Pairs)</div>
+                <div class="value" style="color: #15803d;">{{ results.total_pairs_sold }} জোড়া</div>
+            </div>
+            <div class="stat-card primary">
+                <div class="label">সর্বমোট অর্জিত রাজস্ব (Total Revenue)</div>
+                <div class="value" style="color: #2563eb;">৳ {{ results.total_revenue|intcomma }}</div>
+            </div>
+            <div class="stat-card success">
+                <div class="label">সর্বমোট মোট লাভ (Total Gross Profit)</div>
+                <div class="value" style="color: #166534;">৳ {{ results.total_gross_profit|intcomma }}</div>
+            </div>
+        </div>
+
+        <!-- Detailed Historical Lines Table -->
+        <div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.25rem; margin-top: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 1.15rem; color: #1e293b; margin-bottom: 1rem;">
+                ঐতিহাসিক সকল বিক্রয় লাইনের বিবরণ (Historical Sale Lines)
+            </h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ইনভয়েস নং</th>
+                            <th>তারিখ ও সময়</th>
+                            <th>মডেল নাম</th>
+                            <th>সাইজ</th>
+                            <th>কালার</th>
+                            <th>বিক্রিত জোড়া</th>
+                            <th>মূল একক দর</th>
+                            <th>ছাড় (%)</th>
+                            <th>চূড়ান্ত লাইন মূল্য</th>
+                            <th>ক্রয়মূল্য স্ন্যাপশট (Cost)</th>
+                            <th>অর্জিত মোট লাভ (Profit)</th>
+                            <th>কাস্টমার</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in results.lines %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'receipt_view' line.sale_id %}" target="_blank" style="color: #1e3a8a; font-weight: bold; text-decoration: underline;">
+                                    {{ line.invoice_no }}
+                                </a>
+                            </td>
+                            <td>{{ line.date_time|date:"d M Y, h:i A" }}</td>
+                            <td>{{ line.product_name }}</td>
+                            <td><span class="day-badge day-open">{{ line.size }}</span></td>
+                            <td>{{ line.colour }}</td>
+                            <td><strong>{{ line.quantity }}</strong></td>
+                            <td>৳ {{ line.unit_price|intcomma }}</td>
+                            <td>{{ line.discount_percent }}% (৳ {{ line.discount_amount }})</td>
+                            <td><strong style="color: #1e3a8a;">৳ {{ line.final_line_total|intcomma }}</strong></td>
+                            <td style="color: #b45309;">৳ {{ line.cost_snapshot|intcomma }}</td>
+                            <td style="color: #15803d; font-weight: bold;">৳ {{ line.gross_profit|intcomma }}</td>
+                            <td>{{ line.customer_name|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert-box alert-warning">
+            কোড "<strong>{{ searched_code }}</strong>" এর কোনো ঐতিহাসিক বিক্রয় তথ্য ডাটাবেজে পাওয়া যায়নি।
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

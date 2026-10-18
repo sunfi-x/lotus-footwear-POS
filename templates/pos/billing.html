@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}পয়েন্ট অফ সেল (POS) বিলিং - Lotus Footwear{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div>
+        <h1 style="font-size: 1.5rem; color: #1e293b;">জুতা বিক্রয় বিলিং স্ক্রিন (POS Billing)</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">
+            কীবোর্ড শর্টকাট: <kbd style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">F2</kbd> জুতার কোড সার্চ | 
+            <kbd style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">F4</kbd> ক্যাশ পেমেন্ট | 
+            <kbd style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Enter</kbd> সার্চ/কনফার্ম
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'home' %}" class="btn btn-secondary btn-sm">← হোম ড্যাশবোর্ড</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start;">
+    <!-- Left Column: Product Selection & Cart -->
+    <div>
+        <!-- Product Picker Card -->
+        <div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; align-items: end;">
+                <!-- Step 1: Product Code Search -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">১. জুতার কোড সার্চ (Product Code):</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="pos-product-search" class="form-control" placeholder="যেমন: M0001, L102 (লিখে Enter চাপুন)" autofocus>
+                        <button type="button" id="pos-search-btn" class="btn btn-primary">খুঁজুন</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Dynamic Size -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">২. সাইজ (Size):</label>
+                    <select id="pos-size-select" class="form-control" disabled>
+                        <option value="">-- আগে কোড সার্চ করুন --</option>
+                    </select>
+                </div>
+
+                <!-- Step 3: Dynamic Colour -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">৩. কালার (Colour):</label>
+                    <select id="pos-colour-select" class="form-control" disabled>
+                        <option value="">-- সাইজ নির্বাচন করুন --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="pos-search-results" style="margin-top: 0.5rem;"></div>
+
+            <!-- Price, Quantity, Discount Controls Bar -->
+            <div style="display: grid; grid-template-columns: auto 1fr 1fr 1fr auto; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-light);">
+                <!-- Step 4: Dynamic Quantity Control -->
+                <div>
+                    <label class="form-label">পরিমাণ (জোড়া):</label>
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                        <button type="button" id="pos-qty-minus" class="btn btn-secondary" style="width: 36px; height: 36px; padding: 0; font-size: 1.2rem; font-weight: bold;">−</button>
+                        <input type="number" id="pos-qty-input" class="form-control" value="1" min="1" style="width: 60px; text-align: center; font-weight: bold;">
+                        <button type="button" id="pos-qty-plus" class="btn btn-secondary" style="width: 36px; height: 36px; padding: 0; font-size: 1.2rem; font-weight: bold;">+</button>
+                    </div>
+                </div>
+
+                <!-- Price Control -->
+                <div>
+                    <label class="form-label">একক বিক্রয় মূল্য (Unit Price):</label>
+                    <input type="number" step="0.01" id="pos-price-input" class="form-control" value="0.00" style="font-weight: bold; color: #1e3a8a;">
+                </div>
+
+                <!-- Discount Control -->
+                <div>
+                    <label class="form-label">ছাড় / ডিসকাউন্ট (%):</label>
+                    <input type="number" step="0.5" id="pos-discount-input" class="form-control" value="0" min="0" max="100">
+                </div>
+
+                <!-- Live Total Preview & Stock Badge -->
+                <div style="text-align: center;">
+                    <div id="pos-stock-badge"></div>
+                    <div id="pos-line-total-preview" style="font-size: 1.1rem; font-weight: 800; color: #15803d; margin-top: 4px;">মোট: ৳ 0.00</div>
+                </div>
+
+                <!-- Add Button -->
+                <div>
+                    <button type="button" id="pos-add-item-btn" class="btn btn-success" style="font-weight: 700; height: 42px;">
+                        + বিলে যোগ করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Table Card -->
+        <div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #1e293b;">বর্তমান বিলের আইটেমসমূহ (Cart Items)</h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>জুতার মডেল ও নাম</th>
+                            <th>সাইজ</th>
+                            <th>কালার</th>
+                            <th>পরিমাণ</th>
+                            <th>একক মূল্য</th>
+                            <th>ছাড় (%)</th>
+                            <th>লাইন মোট</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pos-cart-tbody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                কোনো জুতা এখনও বিলে যোগ করা হয়নি। উপরের বক্স থেকে কোড দিয়ে খুঁজে সাইজ ও কালার সিলেক্ট করে "বিলে যোগ করুন" চাপুন।
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Customer Details, Financial Summary & Invoice Finalization -->
+    <div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 1.15rem; color: #1e3a8a; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+            বিল হিসাব ও পেমেন্ট
+        </h3>
+
+        <!-- Optional Customer Details -->
+        <div style="background: #f8fafc; padding: 0.85rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid var(--border-light);">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">কাস্টমার তথ্য (ঐচ্ছিক / Optional)</div>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+                <input type="text" id="pos-cust-name" class="form-control" placeholder="কাস্টমারের নাম (যদি থাকে)">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" id="pos-cust-phone" class="form-control" placeholder="মোবাইল নম্বর (01XXXXXXXXX)">
+            </div>
+        </div>
+
+        <!-- Calculated Summary -->
+        <div style="border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem; margin-bottom: 0.75rem; font-size: 0.95rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                <span style="color: var(--text-muted);">উপমোট (Subtotal):</span>
+                <span id="pos-subtotal-val" style="font-weight: 600;">৳ 0.00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem; color: #b45309;">
+                <span>মোট ছাড় (Discount):</span>
+                <span id="pos-discount-val" style="font-weight: 600;">৳ 0.00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                <span>হিসাবকৃত মোট (Calculated Total):</span>
+                <span id="pos-calc-total-val" style="font-weight: 600;">৳ 0.00</span>
+            </div>
+        </div>
+
+        <!-- Staff Manual Final Total Override (Freedom) -->
+        <div class="form-group" style="background: #fefce8; padding: 0.85rem; border-radius: 6px; border: 1.5px solid #fef08a; margin-bottom: 1rem;">
+            <label class="form-label" style="color: #854d0e; font-weight: 700;">
+                ★ চূড়ান্ত বিলের পরিমাণ (Final Total):
+            </label>
+            <input type="number" step="0.01" id="pos-manual-total-input" class="form-control" value="0.00" style="font-size: 1.4rem; font-weight: 800; color: #1e3a8a; text-align: right;">
+            <small style="color: #a16207; display: block; margin-top: 4px; font-size: 0.75rem;">
+                কর্মী ইচ্ছেমতো কাস্টমারকে রাউন্ড ফিগারে চূড়ান্ত বিল দিতে পারেন। কোনো এডমিন পিন প্রয়োজন নেই।
+            </small>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-group">
+            <label class="form-label">পেমেন্ট মাধ্যম (Payment Method):</label>
+            <select id="pos-payment-method" class="form-control" style="font-weight: 600;">
+                <option value="CASH">Cash (দোকানের নগদ টাকা)</option>
+                <option value="BKASH">bKash (বিকাশ মার্চেন্ট/পার্সোনাল)</option>
+                <option value="NAGAD">Nagad (নগদ)</option>
+                <option value="CARD">Bank Card (পিওএস কার্ড)</option>
+                <option value="OTHER">Other (অন্যান্য)</option>
+            </select>
+        </div>
+
+        <!-- Amount Paid -->
+        <div class="form-group">
+            <label class="form-label">কাস্টমার কত টাকা দিয়েছেন (Amount Paid):</label>
+            <input type="number" step="0.01" id="pos-amount-paid-input" class="form-control" value="0.00" style="font-size: 1.25rem; font-weight: 700; color: #15803d; text-align: right;">
+        </div>
+
+        <!-- Live Change or Due Calculation -->
+        <div style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.25rem;">
+                <span style="font-weight: 600; color: #15803d;">ফেরত দিতে হবে (Change):</span>
+                <span id="pos-change-val" style="font-weight: 800; color: #15803d;">৳ 0.00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="font-weight: 600; color: #b91c1c;">বাকি থাকবে (Due):</span>
+                <span id="pos-due-val" style="font-weight: 800; color: #15803d;">৳ 0.00</span>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" id="pos-submit-invoice-btn" class="btn btn-primary btn-lg" style="width: 100%; font-size: 1.15rem; font-weight: 800; box-shadow: 0 4px 6px -1px rgba(30,58,138,0.4);">
+            ✓ বিল সম্পন্ন ও প্রিন্ট করুন
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/pos.js"></script>
+{% endblock %}

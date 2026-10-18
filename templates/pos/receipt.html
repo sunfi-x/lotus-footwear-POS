@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt - {{ sale.invoice_no }}</title>
+    <link rel="stylesheet" href="/static/css/lotus.css">
+    <style>
+        /* Specific screen preview styling */
+        .no-print-bar {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+
+    <div class="no-print-bar">
+        <div>
+            <strong>Thermal Receipt Preview (58mm Paper)</strong> | Invoice: {{ sale.invoice_no }}
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="window.print()" class="btn btn-primary btn-sm">🖨️ Print Receipt (Ctrl+P)</button>
+            <a href="{% url 'pos_screen' %}" class="btn btn-secondary btn-sm">← Back to POS Billing</a>
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-sm">Home Overview</a>
+        </div>
+    </div>
+
+    <div style="padding: 20px 0;">
+        <div id="thermal-receipt" class="receipt-container">
+            <div class="receipt-center receipt-bold" style="font-size: 13px;">
+                {{ shop_settings.shop_name }}
+            </div>
+            <div class="receipt-center" style="font-size: 10px; margin-top: 2px;">
+                {{ shop_settings.shop_address }}
+            </div>
+            <div class="receipt-center" style="font-size: 10px;">
+                Phone: {{ shop_settings.shop_phone }}
+            </div>
+            
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-center receipt-bold">
+                SALES RECEIPT
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-flex">
+                <span>Invoice:</span>
+                <span class="receipt-bold">{{ sale.invoice_no }}</span>
+            </div>
+            <div class="receipt-flex">
+                <span>Date:</span>
+                <span>{{ sale.created_at|date:"d-M-Y h:i A" }}</span>
+            </div>
+            {% if sale.customer_name %}
+            <div class="receipt-flex">
+                <span>Customer:</span>
+                <span>{{ sale.customer_name }}</span>
+            </div>
+            {% endif %}
+            {% if sale.customer_phone %}
+            <div class="receipt-flex">
+                <span>Phone:</span>
+                <span>{{ sale.customer_phone }}</span>
+            </div>
+            {% endif %}
+
+            <div class="receipt-divider"></div>
+
+            <!-- Items Section -->
+            {% for line in sale.lines.all %}
+            <div style="margin-bottom: 6px;">
+                <div class="receipt-bold">
+                    {{ line.variant.product.code }} - {{ line.variant.product.name }}
+                </div>
+                <div class="receipt-flex" style="font-size: 10px;">
+                    <span>Size: {{ line.variant.size }} | Col: {{ line.variant.colour }}</span>
+                    <span>Qty: {{ line.quantity }} Pair{{ line.quantity|pluralize }}</span>
+                </div>
+                <div class="receipt-flex" style="font-size: 10px;">
+                    <span>@ Tk {{ line.unit_price }} {% if line.discount_percent > 0 %}(-{{ line.discount_percent }}%){% endif %}</span>
+                    <span class="receipt-bold">Tk {{ line.final_line_total }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-flex">
+                <span>Subtotal:</span>
+                <span>Tk {{ sale.subtotal }}</span>
+            </div>
+            {% if sale.discount_amount > 0 %}
+            <div class="receipt-flex">
+                <span>Discount:</span>
+                <span>-Tk {{ sale.discount_amount }}</span>
+            </div>
+            {% endif %}
+            {% if sale.manual_adjustment != 0 %}
+            <div class="receipt-flex" style="font-size: 10px;">
+                <span>Price Adjustment:</span>
+                <span>{% if sale.manual_adjustment > 0 %}+{% endif %}Tk {{ sale.manual_adjustment }}</span>
+            </div>
+            {% endif %}
+
+            <div class="receipt-double-divider"></div>
+
+            <div class="receipt-flex receipt-bold" style="font-size: 13px;">
+                <span>TOTAL:</span>
+                <span>Tk {{ sale.final_total }}</span>
+            </div>
+
+            <div class="receipt-double-divider"></div>
+
+            <div class="receipt-flex">
+                <span>Payment Method:</span>
+                <span>{{ sale.get_payment_method_display }}</span>
+            </div>
+            <div class="receipt-flex">
+                <span>Amount Paid:</span>
+                <span>Tk {{ sale.amount_paid }}</span>
+            </div>
+            {% if sale.change_given > 0 %}
+            <div class="receipt-flex">
+                <span>Change Returned:</span>
+                <span>Tk {{ sale.change_given }}</span>
+            </div>
+            {% endif %}
+            {% if sale.balance_due > 0 %}
+            <div class="receipt-flex receipt-bold" style="color: #000;">
+                <span>Balance Due:</span>
+                <span>Tk {{ sale.balance_due }}</span>
+            </div>
+            {% endif %}
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-center" style="font-size: 10px; margin-top: 6px; white-space: pre-line;">
+                {{ shop_settings.receipt_footer }}
+            </div>
+            <div class="receipt-center" style="font-size: 9px; margin-top: 6px;">
+                * System Generated Receipt *
+            </div>
+        </div>
+    </div>
+
+    {% if auto_print %}
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.print();
+            }, 300);
+        });
+    </script>
+    {% endif %}
+
+</body>
+</html>

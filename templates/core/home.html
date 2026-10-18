@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}হোম - দৈনিক বিক্রয় সারসংক্ষেপ | Lotus Footwear{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div>
+        <h1 style="font-size: 1.6rem; color: #1e293b;">দৈনিক বিক্রয় সারসংক্ষেপ (Daily Sales Overview)</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            তারিখ: <strong>{{ current_business_day.date|default:"আজ"|date:"l, d F Y" }}</strong> 
+            {% if is_shop_open %}
+                | <span style="color: #15803d; font-weight: 700;">দোকান খোলা (Open)</span>
+            {% else %}
+                | <span style="color: #b91c1c; font-weight: 700;">দোকান বন্ধ (Closed)</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+        {% if is_shop_open %}
+            <a href="{% url 'pos_screen' %}" class="btn btn-primary btn-lg" style="font-weight: 700; box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.3);">
+                🛒 নতুন জুতা বিক্রয় বিল (POS)
+            </a>
+            <button type="button" onclick="openDayCloseModal()" class="btn btn-warning btn-lg">
+                🌙 দিন সমাপ্তি (Save & Close Day)
+            </button>
+        {% else %}
+            <button type="button" onclick="openDayOpenModal()" class="btn btn-success btn-lg" style="font-weight: 700;">
+                ☀️ আজকের ব্যবসা দিন শুরু করুন (Open Day)
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+{% if not is_shop_open %}
+<div class="alert-box alert-warning" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <strong>সতর্কতা:</strong> আজকের ব্যবসা দিন এখনও খোলা হয়নি। নতুন বিল বা সেল শুরু করতে অনুগ্রহ করে "আজকের ব্যবসা দিন শুরু করুন" বাটনে ক্লিক করে প্রারম্ভিক ক্যাশ ড্রয়ার ব্যালেন্স এন্ট্রি করুন।
+    </div>
+    <button type="button" onclick="openDayOpenModal()" class="btn btn-success btn-sm">দিন শুরু করুন</button>
+</div>
+{% endif %}
+
+<!-- Stats Cards Grid -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="label">মোট বিক্রিত জুতা (Pairs Sold)</div>
+        <div class="value" style="color: #1e3a8a;">{{ overview.pairs_sold }} <span style="font-size: 1rem; font-weight: 500;">জোড়া</span></div>
+    </div>
+    <div class="stat-card primary">
+        <div class="label">সম্পন্ন ইনভয়েস (Completed Invoices)</div>
+        <div class="value" style="color: #0d9488;">{{ overview.completed_invoices }} <span style="font-size: 1rem; font-weight: 500;">টি</span></div>
+    </div>
+    <div class="stat-card success">
+        <div class="label">মোট চূড়ান্ত বিক্রয় (Net Sales)</div>
+        <div class="value" style="color: #15803d;">৳ {{ overview.net_sales|intcomma }}</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="label">মোট ছাড় দেওয়া হয়েছে (Discounts)</div>
+        <div class="value" style="color: #b45309;">৳ {{ overview.total_discount|intcomma }}</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card success">
+        <div class="label">মোট নগদ গ্রহণ (Cash Received)</div>
+        <div class="value" style="color: #15803d;">৳ {{ overview.cash_received|intcomma }}</div>
+    </div>
+    <div class="stat-card primary">
+        <div class="label">ডিজিটাল পেমেন্ট (bKash/Card/Nagad)</div>
+        <div class="value" style="color: #2563eb;">৳ {{ overview.non_cash_received|intcomma }}</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="label">বাকি / কাস্টমার ডিউ (Outstanding Dues)</div>
+        <div class="value" style="color: #b91c1c;">৳ {{ overview.customer_dues|intcomma }}</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="label">ফেরত ও বাতিল (Returns & Cancelled)</div>
+        <div class="value" style="font-size: 1.3rem;">
+            ফেরত: <strong>{{ overview.returns_count }}</strong> (৳ {{ overview.returns_amount|intcomma }}) <br>
+            <span style="font-size: 0.9rem; color: var(--text-muted);">বাতিল ইনভয়েস: {{ overview.cancelled_count }} টি</span>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Invoices List -->
+<div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.25rem; margin-top: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.15rem; color: #1e293b;">আজকের সর্বশেষ ইনভয়েসসমূহ (Today's Invoices)</h3>
+        <a href="{% url 'invoices_list' %}" class="btn btn-secondary btn-sm">সব ইনভয়েস দেখুন →</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ইনভয়েস নং</th>
+                    <th>সময়</th>
+                    <th>কাস্টমার</th>
+                    <th>জোড়া</th>
+                    <th>উপমোট</th>
+                    <th>ডিসকাউন্ট</th>
+                    <th>চূড়ান্ত বিল</th>
+                    <th>আদায়কৃত টাকা</th>
+                    <th>বাকি (Due)</th>
+                    <th>পদ্ধতি</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in recent_sales %}
+                <tr>
+                    <td><strong>{{ sale.invoice_no }}</strong></td>
+                    <td>{{ sale.created_at|date:"h:i A" }}</td>
+                    <td>{{ sale.customer_name|default:"সাধারণ খদ্দের" }}</td>
+                    <td><span class="day-badge day-open">{{ sale.total_pairs }} জোড়া</span></td>
+                    <td>৳ {{ sale.subtotal|intcomma }}</td>
+                    <td>৳ {{ sale.discount_amount|intcomma }}</td>
+                    <td><strong style="color: #1e3a8a;">৳ {{ sale.final_total|intcomma }}</strong></td>
+                    <td style="color: #15803d;">৳ {{ sale.amount_paid|intcomma }}</td>
+                    <td style="{% if sale.balance_due > 0 %}color: #b91c1c; font-weight: bold;{% endif %}">৳ {{ sale.balance_due|intcomma }}</td>
+                    <td>{{ sale.get_payment_method_display }}</td>
+                    <td>
+                        <a href="{% url 'receipt_view' sale.id %}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.8rem;">🖨️ প্রিন্ট</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        আজ এখনও কোনো বিক্রয় সম্পন্ন হয়নি। নতুন বিল তৈরি করতে উপরের "নতুন জুতা বিক্রয় বিল (POS)" বাটনে ক্লিক করুন।
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
