@@ -1,0 +1,37 @@
+product_code,product_name,category,brand,size,colour,quantity,cost_price,selling_price
+M0001,Formal Leather Oxford,Men,Lotus,39,Black,15,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,40,Black,30,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,41,Black,45,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,42,Black,40,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,43,Black,20,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,40,Brown,25,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,41,Brown,35,850.00,1350.00
+M0001,Formal Leather Oxford,Men,Lotus,42,Brown,25,850.00,1350.00
+M0002,Executive Derby Leather,Men,Lotus,39,Black,18,900.00,1450.00
+M0002,Executive Derby Leather,Men,Lotus,40,Black,28,900.00,1450.00
+M0002,Executive Derby Leather,Men,Lotus,41,Black,40,900.00,1450.00
+M0002,Executive Derby Leather,Men,Lotus,42,Black,32,900.00,1450.00
+M0002,Executive Derby Leather,Men,Lotus,43,Black,15,900.00,1450.00
+L1001,Casual Loafer Slip-on,Men,Lotus,39,Tan,20,650.00,1050.00
+L1001,Casual Loafer Slip-on,Men,Lotus,40,Tan,35,650.00,1050.00
+L1001,Casual Loafer Slip-on,Men,Lotus,41,Tan,40,650.00,1050.00
+L1001,Casual Loafer Slip-on,Men,Lotus,42,Tan,30,650.00,1050.00
+L1001,Casual Loafer Slip-on,Men,Lotus,40,Navy,25,650.00,1050.00
+L1001,Casual Loafer Slip-on,Men,Lotus,41,Navy,30,650.00,1050.00
+S2001,Sports Running Sneaker,Men,Lotus,40,White,25,750.00,1200.00
+S2001,Sports Running Sneaker,Men,Lotus,41,White,50,750.00,1200.00
+S2001,Sports Running Sneaker,Men,Lotus,42,White,45,750.00,1200.00
+S2001,Sports Running Sneaker,Men,Lotus,43,White,20,750.00,1200.00
+S2001,Sports Running Sneaker,Men,Lotus,41,Grey,30,750.00,1200.00
+S2001,Sports Running Sneaker,Men,Lotus,42,Grey,30,750.00,1200.00
+W3001,Women Elegant High Heel,Women,Lotus,36,Black,15,600.00,980.00
+W3001,Women Elegant High Heel,Women,Lotus,37,Black,25,600.00,980.00
+W3001,Women Elegant High Heel,Women,Lotus,38,Black,30,600.00,980.00
+W3001,Women Elegant High Heel,Women,Lotus,39,Black,20,600.00,980.00
+W3001,Women Elegant High Heel,Women,Lotus,37,Red,20,600.00,980.00
+W3001,Women Elegant High Heel,Women,Lotus,38,Red,25,600.00,980.00
+K4001,Kids School Shoe,Kids,Lotus,30,Black,30,400.00,650.00
+K4001,Kids School Shoe,Kids,Lotus,31,Black,40,400.00,650.00
+K4001,Kids School Shoe,Kids,Lotus,32,Black,45,400.00,650.00
+K4001,Kids School Shoe,Kids,Lotus,33,Black,35,400.00,650.00
+K4001,Kids School Shoe,Kids,Lotus,34,Black,25,400.00,650.00
