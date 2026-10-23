@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lotus Footwear POS{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/lotus.css?v=20261023_v4">
+    <link rel="stylesheet" href="/static/css/lotus.css?v=20261023_v6">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -34,7 +34,7 @@
         <div class="nav-group-label">Overview</div>
         <a href="{% url 'home' %}" class="nav-link" data-tooltip="হোম ড্যাশবোর্ড">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-          <span class="nav-label"><span class="bn">হোম ড্যাশবোর্ড</span><span class="en">Home Overview</span></span>
+          <span class="nav-label">হোম ড্যাশবোর্ড</span>
         </a>
       </div>
 
@@ -43,11 +43,11 @@
         <div class="nav-group-label">Sales · বিক্রয়</div>
         <a href="{% url 'pos_screen' %}" class="nav-link" data-tooltip="নতুন বিল (POS)">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.98-1.67L23 6H6"/></svg>
-          <span class="nav-label"><span class="bn">নতুন বিল (POS)</span><span class="en">New Sale / Billing</span></span>
+          <span class="nav-label">নতুন বিল (POS)</span>
         </a>
         <a href="{% url 'invoices_list' %}" class="nav-link" data-tooltip="ইনভয়েস তালিকা">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-          <span class="nav-label"><span class="bn">ইনভয়েস তালিকা</span><span class="en">Invoice List</span></span>
+          <span class="nav-label">ইনভয়েস তালিকা</span>
         </a>
       </div>
 
@@ -57,15 +57,15 @@
         <div class="nav-group-label">Inventory · স্টক</div>
         <a href="{% url 'products_list' %}" class="nav-link" data-tooltip="জুতার স্টক">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9" y1="14.5" x2="15" y2="14.5"/></svg>
-          <span class="nav-label"><span class="bn">জুতার স্টক</span><span class="en">Products & Stock</span></span>
+          <span class="nav-label">জুতার স্টক ও তালিকা</span>
         </a>
         <a href="{% url 'purchases_list' %}" class="nav-link" data-tooltip="নতুন চালান ক্রয়">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5,4.21 12,6.81 16.5,4.21"/><polyline points="7.5,19.79 7.5,14.6 3,12"/><polyline points="21,12 16.5,14.6 16.5,19.79"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span class="nav-label"><span class="bn">নতুন চালান ক্রয়</span><span class="en">New Purchase</span></span>
+          <span class="nav-label">নতুন চালান ক্রয়</span>
         </a>
         <a href="{% url 'csv_migration' %}" class="nav-link" data-tooltip="CSV স্টক ইমপোর্ট">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
-          <span class="nav-label"><span class="bn">CSV স্টক ইমপোর্ট</span><span class="en">CSV Import</span></span>
+          <span class="nav-label">CSV স্টক ইমপোর্ট</span>
         </a>
       </div>
       {% endif %}
@@ -76,23 +76,23 @@
         <div class="nav-group-label">Finance · আর্থিক</div>
         <a href="{% url 'admin_dashboard' %}" class="nav-link" data-tooltip="এডমিন ড্যাশবোর্ড">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          <span class="nav-label"><span class="bn">এডমিন ড্যাশবোর্ড</span><span class="en">Admin Dashboard</span></span>
+          <span class="nav-label">এডমিন ড্যাশবোর্ড</span>
         </a>
         <a href="{% url 'reports_profit' %}" class="nav-link" data-tooltip="লাভ-ক্ষতি রিপোর্ট">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-          <span class="nav-label"><span class="bn">লাভ-ক্ষতি রিপোর্ট</span><span class="en">Profit & Loss</span></span>
+          <span class="nav-label">লাভ-ক্ষতির রিপোর্ট</span>
         </a>
         <a href="{% url 'expenses_list' %}" class="nav-link" data-tooltip="খরচ তালিকা">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-          <span class="nav-label"><span class="bn">খরচ তালিকা</span><span class="en">Expenses</span></span>
+          <span class="nav-label">খরচের হিসাব তালিকা</span>
         </a>
         <a href="{% url 'salesman_payments' %}" class="nav-link" data-tooltip="সেলসম্যান পেমেন্ট">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="nav-label"><span class="bn">সেলসম্যান ও পেমেন্ট</span><span class="en">Salesman Payments</span></span>
+          <span class="nav-label">সেলসম্যান ও পেমেন্ট</span>
         </a>
         <a href="{% url 'historical_search' %}" class="nav-link" data-tooltip="কোড দিয়ে সার্চ">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span class="nav-label"><span class="bn">কোড দিয়ে সার্চ</span><span class="en">Historical Search</span></span>
+          <span class="nav-label">কোড দিয়ে অনুসন্ধান</span>
         </a>
       </div>
       {% endif %}
@@ -103,15 +103,15 @@
         <div class="nav-group-label">System · সিস্টেম</div>
         <a href="{% url 'backup_center' %}" class="nav-link" data-tooltip="ব্যাকআপ ও রিস্টোর">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span class="nav-label"><span class="bn">ব্যাকআপ ও রিস্টোর</span><span class="en">Backup & Restore</span></span>
+          <span class="nav-label">ব্যাকআপ ও রিস্টোর</span>
         </a>
         <a href="{% url 'audit_logs' %}" class="nav-link" data-tooltip="অডিট লগ">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span class="nav-label"><span class="bn">অডিট লগ</span><span class="en">Audit Logs</span></span>
+          <span class="nav-label">অডিট লগ রেজিস্টার</span>
         </a>
         <a href="{% url 'shop_settings' %}" class="nav-link" data-tooltip="সেটিংস">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          <span class="nav-label"><span class="bn">সেটিংস</span><span class="en">Settings</span></span>
+          <span class="nav-label">সিস্টেম সেটিংস</span>
         </a>
       </div>
       {% endif %}

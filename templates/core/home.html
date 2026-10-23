@@ -44,50 +44,80 @@
 <div class="stats-grid stats-grid-6" style="margin-bottom:1.5rem;">
 
     <!-- 1. Pairs Sold -->
-    <div class="stat-card primary">
-        <div class="label">মোট বিক্রিত জুতা (Pairs Sold)</div>
-        <div class="value">{{ overview.pairs_sold }}<span style="font-size:1rem;font-weight:500;margin-left:4px;">জোড়া</span></div>
-        <div class="card-desc">বিক্রয়: {{ overview.total_sold_pairs }} জোড়া &nbsp;|&nbsp; ফেরত: {{ overview.returned_pairs }} জোড়া</div>
+    <div class="stat-card stat-purple">
+        <div class="stat-card-header">
+            <span class="stat-label">মোট বিক্রিত জুতা (Pairs Sold)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            </div>
+        </div>
+        <div class="stat-value">{{ overview.pairs_sold }}<span class="stat-unit">জোড়া</span></div>
+        <div class="stat-footer">বিক্রয়: {{ overview.total_sold_pairs }} জোড়া &nbsp;·&nbsp; ফেরত: {{ overview.returned_pairs }} জোড়া</div>
     </div>
 
     <!-- 2. Completed Invoices -->
-    <div class="stat-card info">
-        <div class="label">সম্পন্ন ইনভয়েস (Invoices)</div>
-        <div class="value" style="color:var(--info);">{{ overview.completed_invoices }}<span style="font-size:1rem;font-weight:500;margin-left:4px;">টি</span></div>
-        <div class="card-desc">সংরক্ষিত সম্পন্ন বিক্রয় ইনভয়েস</div>
+    <div class="stat-card stat-blue">
+        <div class="stat-card-header">
+            <span class="stat-label">সম্পন্ন ইনভয়েস (Invoices)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+        </div>
+        <div class="stat-value" style="color:var(--info);">{{ overview.completed_invoices }}<span class="stat-unit">টি</span></div>
+        <div class="stat-footer">আজকের মোট সম্পন্ন বিক্রয় ইনভয়েস</div>
     </div>
 
     <!-- 3. Net Sales -->
-    <div class="stat-card success">
-        <div class="label">মোট চূড়ান্ত বিক্রয় (Net Sales)</div>
-        <div class="value">৳ {{ overview.net_sales|intcomma }}</div>
-        <div class="card-desc">ইনভয়েসের চূড়ান্ত বিল (ফেরত বাদ দিয়ে)</div>
+    <div class="stat-card stat-green">
+        <div class="stat-card-header">
+            <span class="stat-label">মোট চূড়ান্ত বিক্রয় (Net Sales)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+        </div>
+        <div class="stat-value" style="color:var(--success);">৳ {{ overview.net_sales|intcomma }}</div>
+        <div class="stat-footer">ইনভয়েসের চূড়ান্ত বিল (ফেরত বাদ দিয়ে)</div>
     </div>
 
     <!-- 4. Discounts -->
-    <div class="stat-card warning">
-        <div class="label">মোট ছাড় (Discounts)</div>
-        <div class="value">৳ {{ overview.total_discount|intcomma }}</div>
-        <div class="card-desc">আজকের ইনভয়েসে প্রদত্ত ছাড়</div>
+    <div class="stat-card stat-amber">
+        <div class="stat-card-header">
+            <span class="stat-label">মোট ছাড় (Discounts)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            </div>
+        </div>
+        <div class="stat-value" style="color:var(--warning);">৳ {{ overview.total_discount|intcomma }}</div>
+        <div class="stat-footer">আজকের ইনভয়েসে প্রদত্ত মোট ছাড়</div>
     </div>
 
     <!-- 5. Expected Cash -->
-    <div class="stat-card {% if overview.missing_opening_cash %}danger{% else %}success{% endif %}">
-        <div class="label">ক্যাশ ড্রয়ারে থাকার কথা (Expected Cash)</div>
+    <div class="stat-card {% if overview.missing_opening_cash %}stat-red{% else %}stat-green{% endif %}">
+        <div class="stat-card-header">
+            <span class="stat-label">ড্রয়ারে থাকার কথা (Expected Cash)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1"/></svg>
+            </div>
+        </div>
         {% if overview.missing_opening_cash %}
-            <div class="value" style="font-size:1.1rem;">⚠️ রেকর্ড নেই</div>
-            <div class="card-desc" style="color:var(--danger);">প্রারম্ভিক ক্যাশ দিয়ে দিন শুরু করুন</div>
+            <div class="stat-value" style="font-size:1.25rem;color:var(--danger);">⚠️ রেকর্ড নেই</div>
+            <div class="stat-footer" style="color:var(--danger);">প্রারম্ভিক ক্যাশ দিয়ে দিন শুরু করুন</div>
         {% else %}
-            <div class="value">৳ {{ overview.expected_cash|intcomma }}</div>
-            <div class="card-desc">খোলা ({{ overview.opening_cash|intcomma }}) + নগদ ({{ overview.cash_received|intcomma }}) − খরচ ({{ overview.cash_expenses|intcomma }})</div>
+            <div class="stat-value">৳ {{ overview.expected_cash|intcomma }}</div>
+            <div class="stat-footer">খোলা ({{ overview.opening_cash|intcomma }}) + নগদ ({{ overview.cash_received|intcomma }}) − খরচ ({{ overview.cash_expenses|intcomma }})</div>
         {% endif %}
     </div>
 
     <!-- 6. Digital Payments -->
-    <div class="stat-card primary">
-        <div class="label">ডিজিটাল পেমেন্ট (bKash / Card / Nagad)</div>
-        <div class="value">৳ {{ overview.digital_received|intcomma }}</div>
-        <div class="card-desc">বিকাশ, কার্ড ও নগদ ডিজিটাল মাধ্যমে প্রাপ্ত মোট</div>
+    <div class="stat-card stat-purple">
+        <div class="stat-card-header">
+            <span class="stat-label">ডিজিটাল পেমেন্ট (Digital)</span>
+            <div class="stat-icon-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+        </div>
+        <div class="stat-value" style="color:var(--primary);">৳ {{ overview.digital_received|intcomma }}</div>
+        <div class="stat-footer">বিকাশ, কার্ড ও নগদ ডিজিটাল মাধ্যমে প্রাপ্ত মোট</div>
     </div>
 
 </div>
