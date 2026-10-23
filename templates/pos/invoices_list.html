@@ -68,9 +68,9 @@
                     </td>
                     <td style="text-align:center;"><span class="badge badge-primary">{{ sale.total_pairs }} জোড়া</span></td>
                     <td class="num">৳ {{ sale.subtotal|intcomma }}</td>
-                    <td class="num" style="color:var(--warning);">৳ {{ sale.discount_amount|intcomma }}</td>
-                    <td class="num"><strong style="color:var(--primary);">৳ {{ sale.final_total|intcomma }}</strong></td>
-                    <td class="num text-success">৳ {{ sale.amount_paid|intcomma }}</td>
+                    <td class="num">৳ {{ sale.discount_amount|intcomma }}</td>
+                    <td class="num"><strong>৳ {{ sale.final_total|intcomma }}</strong></td>
+                    <td class="num">৳ {{ sale.amount_paid|intcomma }}</td>
                     <td class="num {% if sale.balance_due > 0 %}text-danger fw-bold{% endif %}">৳ {{ sale.balance_due|intcomma }}</td>
                     <td>
                         {% if sale.status == 'COMPLETED' %}

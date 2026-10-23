@@ -63,7 +63,7 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
         </div>
-        <div class="stat-value" style="color:var(--info);">{{ overview.completed_invoices }}<span class="stat-unit">টি</span></div>
+        <div class="stat-value">{{ overview.completed_invoices }}<span class="stat-unit">টি</span></div>
         <div class="stat-footer">আজকের মোট সম্পন্ন বিক্রয় ইনভয়েস</div>
     </div>
 
@@ -75,7 +75,7 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </div>
         </div>
-        <div class="stat-value" style="color:var(--success);">৳ {{ overview.net_sales|intcomma }}</div>
+        <div class="stat-value">৳ {{ overview.net_sales|intcomma }}</div>
         <div class="stat-footer">ইনভয়েসের চূড়ান্ত বিল (ফেরত বাদ দিয়ে)</div>
     </div>
 
@@ -87,7 +87,7 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
             </div>
         </div>
-        <div class="stat-value" style="color:var(--warning);">৳ {{ overview.total_discount|intcomma }}</div>
+        <div class="stat-value">৳ {{ overview.total_discount|intcomma }}</div>
         <div class="stat-footer">আজকের ইনভয়েসে প্রদত্ত মোট ছাড়</div>
     </div>
 
@@ -116,7 +116,7 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             </div>
         </div>
-        <div class="stat-value" style="color:var(--primary);">৳ {{ overview.digital_received|intcomma }}</div>
+        <div class="stat-value">৳ {{ overview.digital_received|intcomma }}</div>
         <div class="stat-footer">বিকাশ, কার্ড ও নগদ ডিজিটাল মাধ্যমে প্রাপ্ত মোট</div>
     </div>
 
@@ -155,9 +155,9 @@
                         <span class="badge badge-primary">{{ sale.total_pairs }} জোড়া</span>
                     </td>
                     <td class="num">৳ {{ sale.subtotal|intcomma }}</td>
-                    <td class="num" style="color:var(--warning);">৳ {{ sale.discount_amount|intcomma }}</td>
-                    <td class="num"><strong style="color:var(--primary);">৳ {{ sale.final_total|intcomma }}</strong></td>
-                    <td class="num" style="color:var(--success);">৳ {{ sale.amount_paid|intcomma }}</td>
+                    <td class="num">৳ {{ sale.discount_amount|intcomma }}</td>
+                    <td class="num"><strong>৳ {{ sale.final_total|intcomma }}</strong></td>
+                    <td class="num">৳ {{ sale.amount_paid|intcomma }}</td>
                     <td class="num {% if sale.balance_due > 0 %}text-danger fw-bold{% endif %}">৳ {{ sale.balance_due|intcomma }}</td>
                     <td><span class="badge badge-info">{{ sale.get_payment_method_display }}</span></td>
                     <td>

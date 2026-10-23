@@ -64,7 +64,7 @@
                 <div style="font-size:0.82rem;font-weight:700;color:{% if financial.net_profit >= 0 %}var(--success){% else %}var(--danger){% endif %};text-transform:uppercase;letter-spacing:0.05em;">
                     প্রকৃত নিট লাভ (Net Profit After All Expenses)
                 </div>
-                <div class="taka-lg" style="color:{% if financial.net_profit >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                <div class="taka-lg">
                     ৳ {{ financial.net_profit|intcomma }}
                 </div>
             </div>

@@ -16,7 +16,7 @@
             {% endif %}
         </div>
         <p class="page-subtitle" style="margin-top: 6px;">
-            সেলসম্যান আইডি: <strong style="font-family: monospace; color: var(--primary);">{{ salesman.salesman_id }}</strong> &nbsp;|&nbsp; 
+            সেলসম্যান আইডি: <strong >{{ salesman.salesman_id }}</strong> &nbsp;|&nbsp; 
             📞 {{ salesman.phone|default:"ফোন নম্বর নেই" }} &nbsp;|&nbsp; 
             যোগদানের তারিখ: {{ salesman.joining_date|date:"d M Y"|default:"উল্লেখ নেই" }}
         </p>
@@ -142,10 +142,10 @@
                 <tbody>
                     {% for p in payments %}
                     <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: var(--danger); text-decoration: line-through;{% endif %}">
-                        <td><strong style="font-family: monospace; color: var(--primary);">{{ p.payment_id }}</strong></td>
+                        <td><strong >{{ p.payment_id }}</strong></td>
                         <td>{{ p.payment_date|date:"d M Y" }}</td>
                         <td><span class="badge badge-neutral">{{ p.get_payment_type_display }}</span></td>
-                        <td><strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: var(--danger);{% else %}color: var(--success);{% endif %}">৳ {{ p.amount|intcomma }}</strong></td>
+                        <td><strong >৳ {{ p.amount|intcomma }}</strong></td>
                         <td>
                             <span class="badge {% if p.payment_method == 'CASH' %}badge-success{% else %}badge-info{% endif %}">
                                 {{ p.get_payment_method_display }}

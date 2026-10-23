@@ -582,10 +582,10 @@ body.sidebar-collapsed .nav-link:hover::after {
 .stat-red    .stat-icon-pill, .stat-card.danger .stat-icon-pill   { background: #FEE2E2; color: #B42332; }
 
 .stat-value, .stat-card .value {
-  font-size: 1.85rem;
-  font-weight: 700;
+  font-size: 1.9rem;
+  font-weight: 800;
   line-height: 1.15;
-  color: var(--text-main);
+  color: #000000 !important; /* CRITICAL: Solid Black Digits for maximum readability */
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -675,10 +675,11 @@ body.sidebar-collapsed .nav-link:hover::after {
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover { background: var(--surface-alt); }
 
-.data-table .num {
+.data-table .num, .num {
   font-variant-numeric: tabular-nums;
   text-align: right;
-  font-weight: 600;
+  font-weight: 700;
+  color: #000000 !important; /* CRITICAL: Pure black numbers in all tables */
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
@@ -864,9 +865,9 @@ body.sidebar-collapsed .nav-link:hover::after {
 }
 
 .pos-total-amount {
-  font-size: 2.3rem;
-  font-weight: 800;
-  color: var(--primary-dark);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #000000 !important; /* CRITICAL: High-contrast pure black final total */
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
   margin-top: 2px;
@@ -1107,4 +1108,19 @@ kbd {
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
   margin-top: 4px;
+  color: #000000 !important; /* Pure black digit */
+}
+
+
+/* ── Universal Black Digits Enforcement ──────────────────────────────────── */
+.digit-black, .taka-amount, .stat-value, .stat-value *,
+.data-table .num, .data-table .num strong, .data-table .num span:not(.badge),
+.pos-total-amount, .pos-billing-panel .fw-bold {
+  color: #000000 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-unit {
+  color: #111111 !important;
+  font-weight: 600;
 }

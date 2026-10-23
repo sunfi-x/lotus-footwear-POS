@@ -38,8 +38,8 @@
                     <td><strong>{{ p.supplier.name }}</strong></td>
                     <td>{{ p.invoice_no|default:"—" }}</td>
                     <td style="text-align:center;"><span class="badge badge-info">{{ p.lines.count }} টি</span></td>
-                    <td class="num"><strong style="color:var(--primary);">৳ {{ p.total_amount|intcomma }}</strong></td>
-                    <td class="num text-success">৳ {{ p.paid_amount|intcomma }}</td>
+                    <td class="num"><strong>৳ {{ p.total_amount|intcomma }}</strong></td>
+                    <td class="num">৳ {{ p.paid_amount|intcomma }}</td>
                     <td style="color:var(--text-muted);font-size:0.82rem;">{{ p.notes|default:"—" }}</td>
                 </tr>
                 {% empty %}

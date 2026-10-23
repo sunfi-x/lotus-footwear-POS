@@ -28,7 +28,7 @@
     <!-- 2. GENTS STOCK -->
     <div class="stat-card info">
         <div class="label">Gents Stock (GENTS PAIRS)</div>
-        <div class="value" style="color:var(--info);">
+        <div class="value">
             {{ kpi.gents_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
         <div class="card-desc">পুরুষদের জুতার বর্তমান মজুদ</div>
@@ -37,7 +37,7 @@
     <!-- 3. LADIES STOCK -->
     <div class="stat-card primary">
         <div class="label">Ladies Stock (LADIES PAIRS)</div>
-        <div class="value" style="color:var(--primary);">
+        <div class="value">
             {{ kpi.ladies_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
         <div class="card-desc">মহিলাদের জুতার বর্তমান মজুদ</div>
@@ -46,7 +46,7 @@
     <!-- 4. KIDS STOCK -->
     <div class="stat-card warning">
         <div class="label">Kids Stock (KIDS PAIRS)</div>
-        <div class="value" style="color:var(--warning);">
+        <div class="value">
             {{ kpi.kids_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
         <div class="card-desc">বাচ্চাদের সকল গ্রুপ (A–E) মিলিয়ে মজুদ</div>
@@ -55,7 +55,7 @@
     <!-- 5. TOTAL INVENTORY COST -->
     <div class="stat-card success">
         <div class="label">মোট স্টকের ক্রয়মূল্য (INVENTORY VALUE)</div>
-        <div class="value" style="color:var(--success);">
+        <div class="value">
             ৳ {{ kpi.total_inventory_cost|default:0|intcomma }}
         </div>
         <div class="card-desc">বর্তমান মজুদের ক্রয়মূল্য (WAC অনুযায়ী)</div>

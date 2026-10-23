@@ -29,7 +29,7 @@
     <!-- 2. Payments Made Today -->
     <div class="stat-card info">
         <div class="label">আজকের মোট পেমেন্ট (Payments Made Today)</div>
-        <div class="value" style="color:var(--info);">
+        <div class="value">
             ৳ {{ payments_today_amount|default:0|intcomma }}
         </div>
         <div class="card-desc">আজকের তারিখে প্রদত্ত বেতন, অগ্রিম ও বোনাস</div>
@@ -38,7 +38,7 @@
     <!-- 3. Payments Made This Month -->
     <div class="stat-card primary">
         <div class="label">চলতি মাসের মোট পেমেন্ট (This Month)</div>
-        <div class="value" style="color:var(--primary);">
+        <div class="value">
             ৳ {{ payments_this_month_amount|default:0|intcomma }}
         </div>
         <div class="card-desc">চলতি ক্যালেন্ডার মাসে পরিশোধিত মোট টাকা</div>
@@ -47,7 +47,7 @@
     <!-- 4. Total Payments in Selected Date Range -->
     <div class="stat-card success">
         <div class="label">নির্বাচিত সময়ের মোট পেমেন্ট (Selected Range)</div>
-        <div class="value" style="color:var(--success);">
+        <div class="value">
             ৳ {{ filtered_total_amount|default:0|intcomma }}
         </div>
         <div class="card-desc">ফিল্টারে প্রদর্শিত {{ filtered_completed_count }} টি সম্পন্ন পেমেন্টের মোট যোগফল</div>

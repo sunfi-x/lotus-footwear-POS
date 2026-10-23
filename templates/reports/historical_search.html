@@ -88,10 +88,10 @@
                             <td>{{ line.colour }}</td>
                             <td class="num fw-bold">{{ line.quantity }}</td>
                             <td class="num">৳ {{ line.unit_price|intcomma }}</td>
-                            <td class="num" style="color:var(--warning);">{{ line.discount_percent }}% (৳ {{ line.discount_amount }})</td>
-                            <td class="num"><strong style="color:var(--primary);">৳ {{ line.final_line_total|intcomma }}</strong></td>
-                            <td class="num" style="color:var(--warning);">৳ {{ line.cost_snapshot|intcomma }}</td>
-                            <td class="num fw-bold text-success">৳ {{ line.gross_profit|intcomma }}</td>
+                            <td class="num">{{ line.discount_percent }}% (৳ {{ line.discount_amount }})</td>
+                            <td class="num"><strong>৳ {{ line.final_line_total|intcomma }}</strong></td>
+                            <td class="num">৳ {{ line.cost_snapshot|intcomma }}</td>
+                            <td class="num fw-bold">৳ {{ line.gross_profit|intcomma }}</td>
                             <td style="color:var(--text-muted);">{{ line.customer_name|default:"—" }}</td>
                         </tr>
                         {% endfor %}
