@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lotus Footwear POS{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/lotus.css?v=20261023_v7">
+    <link rel="stylesheet" href="/static/css/lotus.css?v=20261023_v8">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -353,21 +353,21 @@
         if (Math.abs(diff) < 0.005) {
             diffBox.style.cssText = 'display:block;background:#dcfce7;border:1.5px solid #86efac;color:#166534;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
             diffVal.textContent = '৳ 0.00 (ক্যাশ সমতা সম্পূর্ণ সঠিক)';
-            diffVal.style.color = '#15803d';
+            diffVal.style.color = '#000000';
             diffMsg.textContent = 'হাতে থাকা ক্যাশের সাথে সিস্টেমের প্রত্যাশিত ব্যালেন্স মিলে গেছে।';
             if (reasonInput) { reasonInput.required = false; reasonInput.style.borderColor = ''; }
             if (reasonLabel) reasonLabel.innerHTML = 'ক্যাশ গরমিল থাকলে কারণ:';
         } else if (diff < 0) {
             diffBox.style.cssText = 'display:block;background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
             diffVal.textContent = `− ৳ ${diffAbs} (ক্যাশ ঘাটতি / Shortage)`;
-            diffVal.style.color = '#b91c1c';
+            diffVal.style.color = '#000000';
             diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে কম টাকা পাওয়া গেছে। কারণ উল্লেখ বাধ্যতামূলক।';
             if (reasonInput) { reasonInput.required = true; reasonInput.style.borderColor = '#ef4444'; }
             if (reasonLabel) reasonLabel.innerHTML = '<span style="color:#b91c1c;font-weight:700;">★ ক্যাশ ঘাটতির কারণ (বাধ্যতামূলক):</span>';
         } else {
             diffBox.style.cssText = 'display:block;background:#e0f2fe;border:1.5px solid #7dd3fc;color:#0369a1;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
             diffVal.textContent = `+ ৳ ${diffAbs} (ক্যাশ বেশি / Surplus)`;
-            diffVal.style.color = '#0284c7';
+            diffVal.style.color = '#000000';
             diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে বেশি টাকা রয়েছে। কারণ উল্লেখ বাধ্যতামূলক।';
             if (reasonInput) { reasonInput.required = true; reasonInput.style.borderColor = '#0284c7'; }
             if (reasonLabel) reasonLabel.innerHTML = '<span style="color:#0369a1;font-weight:700;">★ অতিরিক্ত ক্যাশের কারণ (বাধ্যতামূলক):</span>';

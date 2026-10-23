@@ -352,11 +352,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (paid >= finalTotal) {
             changeGivenEl.textContent = `৳ ${(paid - finalTotal).toFixed(2)}`;
             balanceDueEl.textContent = '৳ 0.00';
-            balanceDueEl.style.color = '#15803d';
+            balanceDueEl.style.color = '#000000';
         } else {
             changeGivenEl.textContent = '৳ 0.00';
             balanceDueEl.textContent = `৳ ${(finalTotal - paid).toFixed(2)}`;
-            balanceDueEl.style.color = '#b91c1c';
+            balanceDueEl.style.color = '#000000';
         }
     }
 

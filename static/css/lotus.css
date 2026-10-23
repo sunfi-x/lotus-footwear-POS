@@ -1124,3 +1124,76 @@ kbd {
   color: #111111 !important;
   font-weight: 600;
 }
+
+
+/* ── Signal Green Quick Action Buttons ───────────────────────────────────── */
+.btn-signal-green,
+.btn-action-green,
+.page-actions .btn-primary,
+.page-actions .btn-success,
+#pos-submit-invoice-btn,
+#pos-add-item-btn,
+#pos-search-btn,
+.modal-footer .btn-primary,
+.sidebar-day-btn.day-open-btn {
+  background: #16A34A !important;
+  color: #FFFFFF !important;
+  border-color: #15803D !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+}
+
+.btn-signal-green:hover,
+.btn-action-green:hover,
+.page-actions .btn-primary:hover,
+.page-actions .btn-success:hover,
+#pos-submit-invoice-btn:hover,
+#pos-add-item-btn:hover,
+#pos-search-btn:hover,
+.modal-footer .btn-primary:hover,
+.sidebar-day-btn.day-open-btn:hover {
+  background: #15803D !important;
+  border-color: #166534 !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.45) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.btn-signal-green:active,
+.btn-action-green:active,
+.page-actions .btn-primary:active,
+.page-actions .btn-success:active,
+#pos-submit-invoice-btn:active,
+#pos-add-item-btn:active,
+#pos-search-btn:active,
+.modal-footer .btn-primary:active,
+.sidebar-day-btn.day-open-btn:active {
+  background: #166534 !important;
+  transform: translateY(0);
+}
+
+/* ── Universal Form Digits: Pure Solid Black ─────────────────────────────── */
+.form-control,
+input, select, textarea,
+input[type="number"], input[type="text"], input[type="date"],
+.pos-total-amount, .taka-amount,
+#pos-subtotal-val, #pos-discount-val, #pos-calc-total-val,
+#pos-change-val, #pos-due-val, #pos-line-total-preview,
+#reconcile-expected-cash, #reconcile-expected-display,
+#reconcile-diff-val, #adj-old-stock,
+#live-total-variants, #live-total-pairs, #live-total-val,
+.stat-value, .stat-value *,
+.data-table .num, .data-table .num * {
+  color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.form-control {
+  font-weight: 600 !important;
+  color: #000000 !important;
+}
+
+input[type="number"], input[type="date"] {
+  font-weight: 700 !important;
+  color: #000000 !important;
+}
