@@ -172,7 +172,33 @@
                 <option value="NAGAD">Nagad (নগদ)</option>
                 <option value="CARD">Bank Card (পিওএস কার্ড)</option>
                 <option value="OTHER">Other (অন্যান্য)</option>
+                <option value="SPLIT">Split (ক্যাশ + ডিজিটাল মিশ্র পেমেন্ট)</option>
             </select>
+        </div>
+
+        <!-- Split Payment Detail Inputs (Visible when SPLIT is selected) -->
+        <div id="pos-split-payment-container" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 0.85rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: #1e40af; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                মিশ্র পেমেন্ট বিবরণী (Split Cash & Digital)
+            </div>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+                <label class="form-label" style="font-size: 0.8rem;">নগদ টাকা (Cash Amount):</label>
+                <input type="number" step="0.01" id="pos-split-cash-input" class="form-control" value="0.00" style="font-weight: 700; text-align: right;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 0.8rem;">ডিজিটাল মাধ্যম:</label>
+                    <select id="pos-split-digital-method" class="form-control" style="font-size: 0.85rem; font-weight: 600;">
+                        <option value="BKASH">bKash (বিকাশ)</option>
+                        <option value="NAGAD">Nagad (নগদ)</option>
+                        <option value="CARD">Card (কার্ড)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 0.8rem;">ডিজিটাল পরিমাণ:</label>
+                    <input type="number" step="0.01" id="pos-split-digital-input" class="form-control" value="0.00" style="font-weight: 700; text-align: right;">
+                </div>
+            </div>
         </div>
 
         <!-- Amount Paid -->

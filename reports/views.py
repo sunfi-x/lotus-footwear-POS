@@ -82,19 +82,33 @@ def profit_report_view(request):
 
     today = timezone.localdate()
 
-    # Parse user-supplied date range (defaults to current calendar month)
-    start_str = request.GET.get('start_date', '')
-    end_str   = request.GET.get('end_date', '')
+    # Parse user-supplied date range or preset period
+    period = request.GET.get('period', '').strip()
+    start_str = request.GET.get('start_date', '').strip()
+    end_str   = request.GET.get('end_date', '').strip()
 
-    try:
-        start_date = datetime.strptime(start_str, '%Y-%m-%d').date() if start_str else None
-        end_date   = datetime.strptime(end_str,   '%Y-%m-%d').date() if end_str   else None
-    except ValueError:
-        messages.warning(request, "তারিখের বিন্যাস সঠিক নয় (YYYY-MM-DD)। ডিফল্ট ব্যবহার করা হয়েছে।")
-        start_date = end_date = None
+    start_date = None
+    end_date = None
+
+    if start_str and end_str:
+        try:
+            start_date = datetime.strptime(start_str, '%Y-%m-%d').date()
+            end_date   = datetime.strptime(end_str,   '%Y-%m-%d').date()
+            period = 'custom'
+        except ValueError:
+            messages.warning(request, "তারিখের বিন্যাস সঠিক নয় (YYYY-MM-DD)। ডিফল্ট ব্যবহার করা হয়েছে।")
+            start_date = end_date = None
 
     if not start_date or not end_date:
-        start_date, end_date = ReportingService.get_calendar_month_range(today.year, today.month)
+        if period == 'daily':
+            start_date = end_date = today
+        elif period == 'weekly':
+            start_date, end_date = ReportingService.get_business_week_range(today)
+        elif period == 'monthly':
+            start_date, end_date = ReportingService.get_calendar_month_range(today.year, today.month)
+        else:
+            period = 'monthly'
+            start_date, end_date = ReportingService.get_calendar_month_range(today.year, today.month)
 
     if start_date > end_date:
         start_date, end_date = end_date, start_date
@@ -105,5 +119,6 @@ def profit_report_view(request):
         'financial': financial,
         'start_date': start_date,
         'end_date': end_date,
+        'period': period,
         'today': today,
     })

@@ -82,6 +82,8 @@ def create_sale_api(request):
         customer_name = data.get('customer_name', '')
         customer_phone = data.get('customer_phone', '')
 
+        split_payments = data.get('split_payments')
+
         sale = BillingService.create_invoice(
             business_day=current_day,
             items=items,
@@ -90,7 +92,8 @@ def create_sale_api(request):
             manual_final_total=manual_final_total,
             payment_method=payment_method,
             amount_paid=amount_paid,
-            user=request.user
+            user=request.user,
+            split_payments=split_payments
         )
 
         return JsonResponse({
@@ -146,11 +149,13 @@ def collect_due_view(request):
         payment_method = request.POST.get('payment_method', 'CASH')
 
         try:
+            current_day = BusinessDay.get_current()
             payment = BillingService.record_due_collection(
                 sale_id=sale_id,
                 amount=amount,
                 payment_method=payment_method,
-                user=request.user
+                user=request.user,
+                business_day=current_day
             )
             messages.success(request, f"ইনভয়েস {payment.sale.invoice_no} এর জন্য ৳ {payment.amount} সফলভাবে জমা নেওয়া হয়েছে। অবশিষ্ট বাকি: ৳ {payment.sale.balance_due}")
         except Exception as e:

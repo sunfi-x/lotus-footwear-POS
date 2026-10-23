@@ -32,6 +32,7 @@ class ProductVariant(models.Model):
     current_stock = models.IntegerField(default=0)
     weighted_avg_cost = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     standard_selling_price = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    low_stock_threshold = models.PositiveIntegerField(default=5, help_text="Alert when stock falls to or below this level")
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

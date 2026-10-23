@@ -1,0 +1,868 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}সেলসম্যান ও পেমেন্ট হিস্ট্রি - Lotus Footwear{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div>
+        <h1 style="font-size: 1.5rem; color: #1e293b; margin: 0;">👤 সেলসম্যান ও পেমেন্ট হিস্ট্রি (Salesman Payments)</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 0;">দোকানের সেলসম্যানদের তালিকা, বেতন, অগ্রিম, বোনাস ও পরিশোধিত সকল পেমেন্টের হিসাব</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" onclick="openAddSalesmanModal()" class="btn btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+            + নতুন সেলসম্যান যোগ করুন (Add Salesman)
+        </button>
+        <button type="button" onclick="openRecordPaymentModal()" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 7px 16px;">
+            + নতুন পেমেন্ট যোগ করুন (Record Payment)
+        </button>
+    </div>
+</div>
+
+<!-- 4 Dashboard KPI Summaries -->
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; gap: 1rem;">
+    <!-- 1. Total Active Salesmen -->
+    <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
+        <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট সক্রিয় সেলসম্যান (Active Salesmen)</div>
+        <div class="value" style="color: #1e3a8a;">
+            {{ total_active_salesmen|default:0 }} <span style="font-size: 0.95rem; font-weight: 500;">জন</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বর্তমান প্রতিষ্ঠানে কর্মরত বিক্রয়কর্মী</div>
+    </div>
+
+    <!-- 2. Payments Made Today -->
+    <div class="stat-card primary" style="border-top: 4px solid #0284c7;">
+        <div class="label" style="font-weight: 700; color: #0284c7;">আজকের মোট পেমেন্ট (Payments Made Today)</div>
+        <div class="value" style="color: #0284c7;">
+            ৳ {{ payments_today_amount|default:0|intcomma }}
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">আজকের তারিখে প্রদত্ত বেতন, অগ্রিম ও বোনাস</div>
+    </div>
+
+    <!-- 3. Payments Made This Month -->
+    <div class="stat-card primary" style="border-top: 4px solid #d946ef;">
+        <div class="label" style="font-weight: 700; color: #a21caf;">চলতি মাসের মোট পেমেন্ট (This Month)</div>
+        <div class="value" style="color: #a21caf;">
+            ৳ {{ payments_this_month_amount|default:0|intcomma }}
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">চলতি ক্যালেন্ডার মাসে পরিশোধিত মোট টাকা</div>
+    </div>
+
+    <!-- 4. Total Payments in Selected Date Range -->
+    <div class="stat-card success" style="border-top: 4px solid #15803d;">
+        <div class="label" style="font-weight: 700; color: #15803d;">নির্বাচিত সময়ের মোট পেমেন্ট (Selected Range)</div>
+        <div class="value" style="color: #15803d;">
+            ৳ {{ filtered_total_amount|default:0|intcomma }}
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">ফিল্টারে প্রদর্শিত {{ filtered_completed_count }} টি সম্পন্ন পেমেন্টের মোট যোগফল</div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- AREA 1: SALESMAN LIST CARD                                     -->
+<!-- ============================================================== -->
+<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.65rem;">
+        <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+            <span>👥</span> সেলসম্যানদের তালিকা (Salesman Directory)
+        </h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">মোট সেলসম্যান: <strong>{{ salesmen|length }}</strong> জন</span>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        {% for sm in salesmen %}
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.75rem 1rem; min-width: 220px; flex: 1 1 calc(25% - 0.75rem); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                    <a href="{% url 'individual_salesman_history' sm.salesman_id %}" style="font-weight: 700; color: #1e3a8a; font-size: 0.98rem; text-decoration: none;">
+                        {{ sm.name }}
+                    </a>
+                    {% if sm.is_active %}
+                        <span class="day-badge day-open" style="font-size: 0.7rem; padding: 1px 6px;">সক্রিয়</span>
+                    {% else %}
+                        <span class="day-badge day-closed" style="font-size: 0.7rem; padding: 1px 6px;">নিষ্ক্রিয়</span>
+                    {% endif %}
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">
+                    আইডি: <strong>{{ sm.salesman_id }}</strong>
+                </div>
+                <div style="font-size: 0.82rem; color: #475569; margin-top: 4px;">
+                    📞 {{ sm.phone|default:"ফোন নম্বর নেই" }}
+                </div>
+            </div>
+
+            <div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                <a href="{% url 'individual_salesman_history' sm.salesman_id %}" style="color: #0284c7; font-weight: 600; text-decoration: none;">
+                    📊 পেমেন্ট হিস্ট্রি →
+                </a>
+                <button type="button" onclick="openEditSalesmanModal('{{ sm.salesman_id }}', '{{ sm.name|escapejs }}', '{{ sm.phone|escapejs }}', '{{ sm.joining_date|default:"" }}', '{{ sm.is_active|yesno:"true,false" }}', '{{ sm.notes|escapejs }}')" 
+                        style="background: none; border: none; color: #64748b; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
+                    এডিট
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); width: 100%;">
+            কোনো সেলসম্যানের তথ্য এখনও যুক্ত করা হয়নি। উপরের <strong>"+ নতুন সেলসম্যান যোগ করুন"</strong> বাটনে ক্লিক করে সেলসম্যান যুক্ত করুন।
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- AREA 2: PAYMENT HISTORY TABLE & SEARCH FILTERS                -->
+<!-- ============================================================== -->
+<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="margin: 0; font-size: 1.15rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💳</span> সকল পেমেন্ট হিস্ট্রি (Payment History)
+        </h3>
+        <div>
+            <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}export=csv" class="btn btn-secondary btn-sm" style="font-weight: 600;">
+                📥 CSV এক্সপোর্ট (Export)
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filters Bar -->
+    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+        <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 80px; gap: 0.65rem; align-items: end;">
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">সেলসম্যান:</label>
+                <select name="salesman" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+                    <option value="">-- সকল সেলসম্যান --</option>
+                    {% for sm in salesmen %}
+                        <option value="{{ sm.salesman_id }}" {% if selected_salesman == sm.salesman_id %}selected{% endif %}>
+                            {{ sm.name }} ({{ sm.salesman_id }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">পেমেন্ট টাইপ:</label>
+                <select name="payment_type" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+                    <option value="">-- সকল টাইপ --</option>
+                    <option value="SALARY" {% if selected_type == 'SALARY' %}selected{% endif %}>Salary (মাসিক বেতন)</option>
+                    <option value="ADVANCE" {% if selected_type == 'ADVANCE' %}selected{% endif %}>Advance (অগ্রিম)</option>
+                    <option value="BONUS" {% if selected_type == 'BONUS' %}selected{% endif %}>Bonus (বোনাস/ইনসেন্টিভ)</option>
+                    <option value="OTHER" {% if selected_type == 'OTHER' %}selected{% endif %}>Other (অন্যান্য ভাতা)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">পেমেন্ট মেথড:</label>
+                <select name="payment_method" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+                    <option value="">-- সকল মেথড --</option>
+                    <option value="CASH" {% if selected_method == 'CASH' %}selected{% endif %}>Cash (নগদ)</option>
+                    <option value="BKASH" {% if selected_method == 'BKASH' %}selected{% endif %}>bKash (বিকাশ)</option>
+                    <option value="NAGAD" {% if selected_method == 'NAGAD' %}selected{% endif %}>Nagad (নগদ)</option>
+                    <option value="BANK" {% if selected_method == 'BANK' %}selected{% endif %}>Bank Transfer</option>
+                    <option value="CARD" {% if selected_method == 'CARD' %}selected{% endif %}>Card (কার্ড)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">শুরুর তারিখ:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">শেষ তারিখ:</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">অনুসন্ধান (Search):</label>
+                <input type="text" name="q" value="{{ q_search }}" placeholder="ID, Txn Ref, নাম..." class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
+            </div>
+
+            <div style="display: flex; gap: 0.3rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">ফিল্টার</button>
+                <a href="{% url 'salesman_payments' %}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.85rem;">রিসেট</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Payments Data Table -->
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>পেমেন্ট তারিখ</th>
+                    <th>সেলসম্যানের নাম</th>
+                    <th>পেমেন্ট টাইপ</th>
+                    <th>টাকার পরিমাণ (৳)</th>
+                    <th>মেথড</th>
+                    <th>রেফারেন্স / Txn ID</th>
+                    <th>মাসের বিবরণ</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: #991b1b; text-decoration: line-through;{% endif %}">
+                    <td>
+                        <strong style="font-family: monospace; color: #1e3a8a;">{{ p.payment_id }}</strong>
+                    </td>
+                    <td>{{ p.payment_date|date:"d M Y" }}</td>
+                    <td>
+                        <a href="{% url 'individual_salesman_history' p.salesman.salesman_id %}" style="font-weight: 600; color: #0284c7; text-decoration: none;">
+                            {{ p.salesman.name }}
+                        </a>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">ID: {{ p.salesman.salesman_id }}</span>
+                    </td>
+                    <td>
+                        <span class="day-badge" style="background: #f1f5f9; color: #334155;">{{ p.get_payment_type_display }}</span>
+                    </td>
+                    <td>
+                        <strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: #991b1b;{% else %}color: #15803d;{% endif %}">
+                            ৳ {{ p.amount|intcomma }}
+                        </strong>
+                    </td>
+                    <td>
+                        <span class="day-badge" style="{% if p.payment_method == 'CASH' %}background: #f0fdf4; color: #166534;{% else %}background: #eff6ff; color: #1e40af;{% endif %}">
+                            {{ p.get_payment_method_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if p.reference_id %}
+                            <code style="font-size: 0.78rem;">{{ p.reference_id }}</code>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.period_covered|default:"—" }}</td>
+                    <td>
+                        {% if p.status == 'COMPLETED' %}
+                            <span class="day-badge day-open" style="font-size: 0.72rem;">সম্পন্ন (OK)</span>
+                        {% else %}
+                            <span class="day-badge day-closed" style="font-size: 0.72rem;">বাতিল/রিভার্সড</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-decoration: none;">
+                        <button type="button" onclick="showPaymentDetailModal('{{ p.payment_id }}', '{{ p.payment_date|date:"d M Y" }}', '{{ p.salesman.name|escapejs }}', '{{ p.salesman.salesman_id }}', '{{ p.get_payment_type_display|escapejs }}', '{{ p.amount }}', '{{ p.get_payment_method_display|escapejs }}', '{{ p.reference_id|escapejs }}', '{{ p.period_covered|escapejs }}', '{{ p.notes|escapejs }}', '{{ p.status }}', '{{ p.recorded_by.username|default:"System" }}', '{{ p.created_at|date:"d M Y, h:i A" }}', '{{ p.reversal_reason|escapejs }}', '{{ p.reversed_by.username|default:"" }}', '{{ p.reversed_at|date:"d M Y, h:i A"|default:"" }}')" 
+                                class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.78rem;">
+                            বিস্তারিত
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি। উপরের <strong>"+ নতুন পেমেন্ট যোগ করুন"</strong> বাটনে ক্লিক করে সেলসম্যানকে পেমেন্ট প্রদান করুন।
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.25rem;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary btn-sm">← পূর্ববর্তী</a>
+        {% endif %}
+        <span style="padding: 4px 10px; font-size: 0.85rem; color: var(--text-muted);">
+            পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary btn-sm">পরবর্তী →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 1: ADD NEW SALESMAN                                      -->
+<!-- ============================================================== -->
+<div id="add-salesman-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-content" style="max-width: 520px; width: 92%; border-radius: 12px; background: #ffffff; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+            <h3 style="margin: 0; color: #1e3a8a; font-size: 1.2rem;">+ নতুন সেলসম্যান যোগ করুন (Add Salesman)</h3>
+            <button type="button" onclick="closeAddSalesmanModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+
+        <form id="add-salesman-form" onsubmit="handleAddSalesmanSubmit(event)">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">সেলসম্যানের নাম (Salesman Name) <span style="color: red;">*</span>:</label>
+                <input type="text" id="sm-name" class="form-control" placeholder="যেমন: মোঃ রফিকুল ইসলাম" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">মোবাইল নম্বর (Phone Number):</label>
+                <input type="text" id="sm-phone" class="form-control" placeholder="যেমন: 01712345678">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">যোগদানের তারিখ (Joining Date):</label>
+                <input type="date" id="sm-joining-date" class="form-control" value="{% now 'Y-m-d' %}">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">স্ট্যাটাস (Status):</label>
+                <select id="sm-status" class="form-control">
+                    <option value="true" selected>সক্রিয় (Active)</option>
+                    <option value="false">নিষ্ক্রিয় (Inactive)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label class="form-label">নোট বা ঠিকানা (Optional Notes):</label>
+                <textarea id="sm-notes" class="form-control" rows="2" placeholder="স্থায়ী ঠিকানা, রেফারেন্স বা অতিরিক্ত তথ্য..."></textarea>
+            </div>
+
+            <div id="sm-error-box" style="display: none; padding: 0.65rem 0.9rem; background: #fee2e2; border-left: 4px solid #b91c1c; color: #991b1b; font-size: 0.85rem; border-radius: 4px; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" onclick="closeAddSalesmanModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" id="sm-save-btn" class="btn btn-primary" style="font-weight: 700;">✓ সংরক্ষণ করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 2: EDIT SALESMAN PROFILE                                 -->
+<!-- ============================================================== -->
+<div id="edit-salesman-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-content" style="max-width: 520px; width: 92%; border-radius: 12px; background: #ffffff; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+            <h3 style="margin: 0; color: #1e3a8a; font-size: 1.2rem;">✏️ সেলসম্যান প্রোফাইল এডিট (<span id="edit-sm-id-badge"></span>)</h3>
+            <button type="button" onclick="closeEditSalesmanModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+
+        <form id="edit-salesman-form" onsubmit="handleEditSalesmanSubmit(event)">
+            {% csrf_token %}
+            <input type="hidden" id="edit-sm-id">
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">সেলসম্যানের নাম <span style="color: red;">*</span>:</label>
+                <input type="text" id="edit-sm-name" class="form-control" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">মোবাইল নম্বর:</label>
+                <input type="text" id="edit-sm-phone" class="form-control">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">যোগদানের তারিখ:</label>
+                <input type="date" id="edit-sm-joining-date" class="form-control">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">স্ট্যাটাস:</label>
+                <select id="edit-sm-status" class="form-control">
+                    <option value="true">সক্রিয় (Active)</option>
+                    <option value="false">নিষ্ক্রিয় (Inactive)</option>
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.75rem;">নিষ্ক্রিয় করলেও পুরাতন পেমেন্ট রেকর্ড সম্পূর্ণ নিরাপদ ও অপরিবর্তিত থাকবে।</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label class="form-label">নোট / বিবরণ:</label>
+                <textarea id="edit-sm-notes" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div id="edit-sm-error-box" style="display: none; padding: 0.65rem 0.9rem; background: #fee2e2; border-left: 4px solid #b91c1c; color: #991b1b; font-size: 0.85rem; border-radius: 4px; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" onclick="closeEditSalesmanModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" id="edit-sm-save-btn" class="btn btn-primary" style="font-weight: 700;">✓ আপডেট করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 3: RECORD PAYMENT                                        -->
+<!-- ============================================================== -->
+<div id="record-payment-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-content" style="max-width: 600px; width: 92%; border-radius: 12px; background: #ffffff; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+            <h3 style="margin: 0; color: #1e3a8a; font-size: 1.2rem;">+ নতুন পেমেন্ট রেকর্ড করুন (Record Payment)</h3>
+            <button type="button" onclick="closeRecordPaymentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+
+        <form id="record-payment-form" onsubmit="handleRecordPaymentSubmit(event)">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">সেলসম্যান নির্বাচন করুন <span style="color: red;">*</span>:</label>
+                    <select id="pay-salesman" class="form-control" required>
+                        <option value="">-- সেলসম্যান সিলেক্ট করুন --</option>
+                        {% for sm in salesmen %}
+                            <option value="{{ sm.salesman_id }}" {% if not sm.is_active %}style="color: #94a3b8;"{% endif %}>
+                                {{ sm.name }} ({{ sm.salesman_id }}){% if not sm.is_active %} [নিষ্ক্রিয়]{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">পেমেন্টের তারিখ (Payment Date) <span style="color: red;">*</span>:</label>
+                    <input type="date" id="pay-date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                <div class="form-group">
+                    <label class="form-label">টাকার পরিমাণ (Amount ৳) <span style="color: red;">*</span>:</label>
+                    <input type="number" step="0.01" min="1" id="pay-amount" class="form-control" placeholder="0.00" required style="font-size: 1.05rem; font-weight: 700; color: #15803d;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">পেমেন্ট টাইপ <span style="color: red;">*</span>:</label>
+                    <select id="pay-type" class="form-control" required>
+                        <option value="SALARY" selected>Salary (মাসিক বেতন)</option>
+                        <option value="ADVANCE">Advance (অগ্রিম)</option>
+                        <option value="BONUS">Bonus (বোনাস/ইনসেন্টিভ)</option>
+                        <option value="OTHER">Other (অন্যান্য ভাতা)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                <div class="form-group">
+                    <label class="form-label">পেমেন্ট মেথড <span style="color: red;">*</span>:</label>
+                    <select id="pay-method" class="form-control" required onchange="handlePayMethodChange()">
+                        <option value="CASH" selected>Cash (দোকানের ক্যাশ ড্রয়ার)</option>
+                        <option value="BKASH">bKash (বিকাশ ডিজিটাল)</option>
+                        <option value="NAGAD">Nagad (নগদ ডিজিটাল)</option>
+                        <option value="BANK">Bank Transfer (ব্যাংক)</option>
+                        <option value="CARD">Card (কার্ড)</option>
+                        <option value="OTHER">Other (অন্যান্য)</option>
+                    </select>
+                    <small id="pay-cash-hint" style="color: #15803d; font-size: 0.73rem; display: block; margin-top: 2px;">
+                        *ক্যাশ পেমেন্ট হলে আজকের ক্যাশ ড্রয়ারের ব্যালেন্স থেকে সমপরিমাণ টাকা বাদ যাবে।
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ট্রানজেকশন রেফারেন্স / Txn ID:</label>
+                    <input type="text" id="pay-ref" class="form-control" placeholder="যেমন: bKash TrxID বা চেক নম্বর">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem;">
+                <label class="form-label">কোন মাসের জন্য (Period Covered / Salary Month):</label>
+                <input type="text" id="pay-period" class="form-control" placeholder="যেমন: অক্টোবর ২০২৬ বা 01-15 Oct 2026">
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
+                <label class="form-label">নোট বা মন্তব্য (Notes):</label>
+                <textarea id="pay-notes" class="form-control" rows="2" placeholder="পেমেন্ট সম্পর্কিত কোনো অতিরিক্ত তথ্য..."></textarea>
+            </div>
+
+            <div id="pay-error-box" style="display: none; padding: 0.65rem 0.9rem; background: #fee2e2; border-left: 4px solid #b91c1c; color: #991b1b; font-size: 0.85rem; border-radius: 4px; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" onclick="closeRecordPaymentModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" id="pay-save-btn" class="btn btn-primary" style="font-weight: 700; padding: 8px 22px;">
+                    ✓ পেমেন্ট কনফার্ম করুন
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 4: PAYMENT DETAILS & REVERSAL WORKFLOW                   -->
+<!-- ============================================================== -->
+<div id="payment-detail-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-content" style="max-width: 580px; width: 92%; border-radius: 12px; background: #ffffff; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+            <h3 style="margin: 0; color: #1e3a8a; font-size: 1.2rem;">📄 পেমেন্ট বিস্তারিত রসিদ (Payment Details)</h3>
+            <button type="button" onclick="closePaymentDetailModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; font-size: 0.9rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div>Payment ID: <strong id="dt-payment-id" style="font-family: monospace; color: #1e3a8a;"></strong></div>
+                <div>তারিখ: <strong id="dt-date"></strong></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div>সেলসম্যান: <strong id="dt-salesman"></strong> (<span id="dt-salesman-id"></span>)</div>
+                <div>টাইপ: <strong id="dt-type"></strong></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div>পরিমাণ: <strong id="dt-amount" style="font-size: 1.15rem; color: #15803d;"></strong></div>
+                <div>মেথড: <strong id="dt-method"></strong></div>
+            </div>
+            <div style="margin-bottom: 0.5rem;">রেফারেন্স / TrxID: <span id="dt-ref" style="font-family: monospace;"></span></div>
+            <div style="margin-bottom: 0.5rem;">মাসের বিবরণ: <span id="dt-period"></span></div>
+            <div style="margin-bottom: 0.5rem;">নোট: <span id="dt-notes"></span></div>
+            <div style="padding-top: 0.5rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; color: var(--text-muted);">
+                এন্ট্রি করেছেন: <strong id="dt-recorded-by"></strong> | সময়: <span id="dt-recorded-at"></span>
+            </div>
+
+            <!-- Reversal notice section if reversed -->
+            <div id="dt-reversal-section" style="display: none; margin-top: 0.75rem; padding: 0.65rem 0.85rem; background: #fee2e2; border-left: 4px solid #b91c1c; color: #991b1b; font-size: 0.82rem; border-radius: 4px;">
+                <strong>⚠️ পেমেন্ট বাতিল / রিভার্স করা হয়েছে</strong><br>
+                কারণ: <span id="dt-reversal-reason"></span><br>
+                বাতিলকারী: <strong id="dt-reversed-by"></strong> | সময়: <span id="dt-reversed-at"></span>
+            </div>
+        </div>
+
+        <!-- Reverse / Void Form (Admin only) -->
+        <div id="reversal-form-box" style="display: none; border: 1px solid #fecaca; background: #fff5f5; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #991b1b; font-size: 0.95rem;">⚠️ ভুল পেমেন্ট সংশোধন বা বাতিল (Controlled Reversal)</h4>
+            <p style="font-size: 0.8rem; color: #7f1d1d; margin: 0 0 0.65rem 0;">
+                পেমেন্ট বাতিল করলে এর সাথে যুক্ত খরচের হিসাব এবং ক্যাশ ড্রয়ার সমন্বয় স্বয়ংক্রিয়ভাবে সংশোধন হবে। অডিট লগে কারণ স্থায়ীভাবে সংরক্ষিত থাকবে।
+            </p>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-size: 0.8rem; color: #991b1b;">বাতিলের বাধ্যতামূলক কারণ (Mandatory Reason):</label>
+                <textarea id="reversal-reason-input" class="form-control" rows="2" placeholder="যেমন: ভুলবশত দ্বিগুণ এন্ট্রি করা হয়েছিল অথবা ভুল সেলসম্যান সিলেক্ট করা হয়েছিল..." required></textarea>
+            </div>
+            <button type="button" onclick="submitPaymentReversal()" id="reversal-submit-btn" class="btn btn-danger btn-sm" style="font-weight: 700;">
+                ✓ পেমেন্ট বাতিল/রিভার্স কনফার্ম করুন
+            </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" id="show-reversal-btn" onclick="toggleReversalForm()" class="btn btn-secondary btn-sm" style="color: #b91c1c; border-color: #fca5a5;">
+                ⚠️ ভুল পেমেন্ট সংশোধন/বাতিল
+            </button>
+            <button type="button" onclick="closePaymentDetailModal()" class="btn btn-secondary">বন্ধ করুন</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Helper for Modal Open/Close ---
+    function openAddSalesmanModal() {
+        document.getElementById('add-salesman-form').reset();
+        document.getElementById('sm-error-box').style.display = 'none';
+        document.getElementById('add-salesman-modal').style.display = 'flex';
+    }
+    function closeAddSalesmanModal() {
+        document.getElementById('add-salesman-modal').style.display = 'none';
+    }
+
+    function openEditSalesmanModal(id, name, phone, joiningDate, isActive, notes) {
+        document.getElementById('edit-sm-id').value = id;
+        document.getElementById('edit-sm-id-badge').textContent = id;
+        document.getElementById('edit-sm-name').value = name;
+        document.getElementById('edit-sm-phone').value = phone;
+        document.getElementById('edit-sm-joining-date').value = joiningDate;
+        document.getElementById('edit-sm-status').value = isActive;
+        document.getElementById('edit-sm-notes').value = notes;
+        document.getElementById('edit-sm-error-box').style.display = 'none';
+        document.getElementById('edit-salesman-modal').style.display = 'flex';
+    }
+    function closeEditSalesmanModal() {
+        document.getElementById('edit-salesman-modal').style.display = 'none';
+    }
+
+    function openRecordPaymentModal() {
+        document.getElementById('record-payment-form').reset();
+        document.getElementById('pay-error-box').style.display = 'none';
+        handlePayMethodChange();
+        document.getElementById('record-payment-modal').style.display = 'flex';
+    }
+    function closeRecordPaymentModal() {
+        document.getElementById('record-payment-modal').style.display = 'none';
+    }
+
+    function handlePayMethodChange() {
+        const method = document.getElementById('pay-method').value;
+        const hint = document.getElementById('pay-cash-hint');
+        if (method === 'CASH') {
+            hint.style.display = 'block';
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+
+    // --- Submit: Add Salesman ---
+    function handleAddSalesmanSubmit(e) {
+        e.preventDefault();
+        const errBox = document.getElementById('sm-error-box');
+        errBox.style.display = 'none';
+
+        const name = document.getElementById('sm-name').value.trim();
+        const phone = document.getElementById('sm-phone').value.trim();
+        const joiningDate = document.getElementById('sm-joining-date').value;
+        const status = document.getElementById('sm-status').value;
+        const notes = document.getElementById('sm-notes').value.trim();
+
+        if (!name) {
+            errBox.textContent = 'সেলসম্যানের নাম আবশ্যক।';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('joining_date', joiningDate);
+        formData.append('is_active', status);
+        formData.append('notes', notes);
+
+        const btn = document.getElementById('sm-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'সংরক্ষণ করা হচ্ছে...';
+
+        fetch('{% url "add_salesman" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '✓ সংরক্ষণ করুন';
+            if (data.success) {
+                if (data.warning) {
+                    alert(data.warning + '\n\n' + data.message);
+                } else {
+                    alert(data.message);
+                }
+                window.location.reload();
+            } else {
+                errBox.textContent = data.error || 'সংরক্ষণে সমস্যা হয়েছে।';
+                errBox.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '✓ সংরক্ষণ করুন';
+            errBox.textContent = 'সার্ভার কানেকশন এরর: ' + err;
+            errBox.style.display = 'block';
+        });
+    }
+
+    // --- Submit: Edit Salesman ---
+    function handleEditSalesmanSubmit(e) {
+        e.preventDefault();
+        const errBox = document.getElementById('edit-sm-error-box');
+        errBox.style.display = 'none';
+
+        const id = document.getElementById('edit-sm-id').value;
+        const name = document.getElementById('edit-sm-name').value.trim();
+        const phone = document.getElementById('edit-sm-phone').value.trim();
+        const joiningDate = document.getElementById('edit-sm-joining-date').value;
+        const status = document.getElementById('edit-sm-status').value;
+        const notes = document.getElementById('edit-sm-notes').value.trim();
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('joining_date', joiningDate);
+        formData.append('is_active', status);
+        formData.append('notes', notes);
+
+        const btn = document.getElementById('edit-sm-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'আপডেট করা হচ্ছে...';
+
+        fetch(`/salesman-payments/edit-salesman/${encodeURIComponent(id)}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '✓ আপডেট করুন';
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                errBox.textContent = data.error || 'আপডেটে সমস্যা হয়েছে।';
+                errBox.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '✓ আপডেট করুন';
+            errBox.textContent = 'সার্ভার কানেকশন এরর: ' + err;
+            errBox.style.display = 'block';
+        });
+    }
+
+    // --- Submit: Record Payment ---
+    function handleRecordPaymentSubmit(e) {
+        e.preventDefault();
+        const errBox = document.getElementById('pay-error-box');
+        errBox.style.display = 'none';
+
+        const salesmanId = document.getElementById('pay-salesman').value;
+        const date = document.getElementById('pay-date').value;
+        const amount = parseFloat(document.getElementById('pay-amount').value || 0);
+        const type = document.getElementById('pay-type').value;
+        const method = document.getElementById('pay-method').value;
+        const ref = document.getElementById('pay-ref').value.trim();
+        const period = document.getElementById('pay-period').value.trim();
+        const notes = document.getElementById('pay-notes').value.trim();
+
+        if (!salesmanId) {
+            errBox.textContent = 'অনুগ্রহ করে সেলসম্যান নির্বাচন করুন।';
+            errBox.style.display = 'block';
+            return;
+        }
+        if (amount <= 0 || isNaN(amount)) {
+            errBox.textContent = 'টাকার পরিমাণ অবশ্যই ০ এর বেশি হতে হবে।';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        // Explicit Confirmation Summary Modal/Alert as required
+        const salesmanName = document.getElementById('pay-salesman').options[document.getElementById('pay-salesman').selectedIndex].text;
+        const confirmMsg = `পেমেন্ট কনফার্মেশন সামারি:\n\n` +
+                           `• সেলসম্যান: ${salesmanName}\n` +
+                           `• টাকার পরিমাণ: ৳ ${amount.toFixed(2)}\n` +
+                           `• তারিখ: ${date}\n` +
+                           `• টাইপ: ${type}\n` +
+                           `• মেথড: ${method}\n\n` +
+                           `আপনি কি নিশ্চিতভাবে এই পেমেন্ট সম্পন্ন করতে চান?`;
+
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('salesman_id', salesmanId);
+        formData.append('payment_date', date);
+        formData.append('amount', amount);
+        formData.append('payment_type', type);
+        formData.append('payment_method', method);
+        formData.append('reference_id', ref);
+        formData.append('period_covered', period);
+        formData.append('notes', notes);
+
+        const btn = document.getElementById('pay-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'সংরক্ষণ করা হচ্ছে...';
+
+        fetch('{% url "record_salesman_payment" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '✓ পেমেন্ট কনফার্ম করুন';
+            if (data.success) {
+                if (data.warning) {
+                    alert(data.warning + '\n\n' + data.message);
+                } else {
+                    alert(data.message);
+                }
+                window.location.reload();
+            } else {
+                errBox.textContent = data.error || 'পেমেন্ট সংরক্ষণে ব্যর্থ হয়েছে।';
+                errBox.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '✓ পেমেন্ট কনফার্ম করুন';
+            errBox.textContent = 'সার্ভার কানেকশন এরর: ' + err;
+            errBox.style.display = 'block';
+        });
+    }
+
+    // --- Payment Details Modal & Reversal Logic ---
+    let currentDetailPaymentId = null;
+
+    function showPaymentDetailModal(paymentId, date, salesman, salesmanId, type, amount, method, ref, period, notes, status, recordedBy, recordedAt, reversalReason, reversedBy, reversedAt) {
+        currentDetailPaymentId = paymentId;
+        document.getElementById('dt-payment-id').textContent = paymentId;
+        document.getElementById('dt-date').textContent = date;
+        document.getElementById('dt-salesman').textContent = salesman;
+        document.getElementById('dt-salesman-id').textContent = salesmanId;
+        document.getElementById('dt-type').textContent = type;
+        document.getElementById('dt-amount').textContent = '৳ ' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 });
+        document.getElementById('dt-method').textContent = method;
+        document.getElementById('dt-ref').textContent = ref || '—';
+        document.getElementById('dt-period').textContent = period || '—';
+        document.getElementById('dt-notes').textContent = notes || '—';
+        document.getElementById('dt-recorded-by').textContent = recordedBy;
+        document.getElementById('dt-recorded-at').textContent = recordedAt;
+
+        const revSection = document.getElementById('dt-reversal-section');
+        const revBtn = document.getElementById('show-reversal-btn');
+        const revFormBox = document.getElementById('reversal-form-box');
+        revFormBox.style.display = 'none';
+
+        if (status === 'REVERSED') {
+            document.getElementById('dt-reversal-reason').textContent = reversalReason;
+            document.getElementById('dt-reversed-by').textContent = reversedBy;
+            document.getElementById('dt-reversed-at').textContent = reversedAt;
+            revSection.style.display = 'block';
+            revBtn.style.display = 'none';
+        } else {
+            revSection.style.display = 'none';
+            revBtn.style.display = 'inline-block';
+        }
+
+        document.getElementById('payment-detail-modal').style.display = 'flex';
+    }
+
+    function closePaymentDetailModal() {
+        document.getElementById('payment-detail-modal').style.display = 'none';
+        currentDetailPaymentId = null;
+    }
+
+    function toggleReversalForm() {
+        const box = document.getElementById('reversal-form-box');
+        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function submitPaymentReversal() {
+        const reason = document.getElementById('reversal-reason-input').value.trim();
+        if (!reason) {
+            alert('পেমেন্ট বাতিলের সুনির্দিষ্ট কারণ অবশ্যই লিখতে হবে।');
+            return;
+        }
+
+        if (!confirm(`আপনি কি নিশ্চিতভাবে পেমেন্ট #${currentDetailPaymentId} বাতিল / রিভার্স করতে চান?\n\nএর ফলে সংশ্লিষ্ট ক্যাশ/খরচ স্বয়ংক্রিয়ভাবে সমন্বয় হয়ে যাবে।`)) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('reason', reason);
+
+        const btn = document.getElementById('reversal-submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'প্রসেসিং...';
+
+        fetch(`/salesman-payments/reverse-payment/${encodeURIComponent(currentDetailPaymentId)}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '✓ পেমেন্ট বাতিল/রিভার্স কনফার্ম করুন';
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('ত্রুটি: ' + (data.error || 'ব্যর্থ হয়েছে'));
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '✓ পেমেন্ট বাতিল/রিভার্স কনফার্ম করুন';
+            alert('সার্ভার এরর: ' + err);
+        });
+    }
+</script>
+{% endblock %}

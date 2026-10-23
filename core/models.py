@@ -17,6 +17,7 @@ class BusinessDay(models.Model):
     closed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='closed_days')
 
     opening_cash = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    other_cash_in = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), help_text="Non-sale cash additions (e.g. owner cash in, petty cash injection)")
     closing_cash_system = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     closing_cash_actual = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     cash_discrepancy = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
@@ -78,6 +79,10 @@ class AuditLog(models.Model):
         ('BACKUP_CREATE', 'Backup Created'),
         ('BACKUP_RESTORE', 'Backup Restored'),
         ('SETTINGS_CHANGE', 'Settings Changed'),
+        ('SALESMAN_ADD', 'Salesman Added'),
+        ('SALESMAN_EDIT', 'Salesman Edited'),
+        ('SALESMAN_PAYMENT', 'Salesman Payment Recorded'),
+        ('SALESMAN_PAYMENT_REVERSE', 'Salesman Payment Reversed'),
     ]
 
     timestamp = models.DateTimeField(default=timezone.now, db_index=True)

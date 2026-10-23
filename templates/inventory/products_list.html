@@ -10,8 +10,58 @@
         <p style="color: var(--text-muted); font-size: 0.9rem;">সকল মডেল, সাইজ, কালার, বর্তমান মজুদ স্টক ও গড় ক্রয়মূল্য (WAC)</p>
     </div>
     <div style="display: flex; gap: 0.5rem;">
-        <button type="button" onclick="openNewProductModal()" class="btn btn-primary btn-sm">+ নতুন জুতার মডেল যোগ করুন</button>
-        <button type="button" onclick="openNewVariantModal()" class="btn btn-secondary btn-sm">+ নতুন সাইজ/কালার ভ্যারিয়েন্ট</button>
+        <!-- Single Primary Button as requested -->
+        <button type="button" onclick="openUnifiedProductModal()" class="btn btn-primary btn-sm" style="font-weight: 600; padding: 8px 16px;">
+            + নতুন জুতার মডেল যোগ করুন
+        </button>
+    </div>
+</div>
+
+<!-- 5 KPI Summary Cards -->
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.5rem; gap: 1rem;">
+    <!-- 1. TOTAL PAIRS IN STOCK -->
+    <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
+        <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট স্টকে জুতা (TOTAL PAIRS)</div>
+        <div class="value" style="color: #1e3a8a;">
+            {{ kpi.total_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">সকল ক্যাটাগরি মিলিয়ে মোট মজুদ</div>
+    </div>
+
+    <!-- 2. GENTS STOCK -->
+    <div class="stat-card primary" style="border-top: 4px solid #0284c7;">
+        <div class="label" style="font-weight: 700; color: #0284c7;">Gents Stock (GENTS PAIRS)</div>
+        <div class="value" style="color: #0284c7;">
+            {{ kpi.gents_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">পুরুষদের জুতার বর্তমান মজুদ</div>
+    </div>
+
+    <!-- 3. LADIES STOCK -->
+    <div class="stat-card primary" style="border-top: 4px solid #d946ef;">
+        <div class="label" style="font-weight: 700; color: #a21caf;">Ladies Stock (LADIES PAIRS)</div>
+        <div class="value" style="color: #a21caf;">
+            {{ kpi.ladies_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">মহিলাদের জুতার বর্তমান মজুদ</div>
+    </div>
+
+    <!-- 4. KIDS STOCK -->
+    <div class="stat-card primary" style="border-top: 4px solid #f59e0b;">
+        <div class="label" style="font-weight: 700; color: #b45309;">Kids Stock (KIDS PAIRS)</div>
+        <div class="value" style="color: #b45309;">
+            {{ kpi.kids_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বাচ্চাদের সকল গ্রুপ (A–E) মিলিয়ে মজুদ</div>
+    </div>
+
+    <!-- 5. TOTAL INVENTORY COST -->
+    <div class="stat-card success" style="border-top: 4px solid #15803d;">
+        <div class="label" style="font-weight: 700; color: #15803d;">মোট স্টকের ক্রয়মূল্য (INVENTORY VALUE)</div>
+        <div class="value" style="color: #15803d;">
+            ৳ {{ kpi.total_inventory_cost|default:0|intcomma }}
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বর্তমান মজুদের ক্রয়মূল্য (WAC অনুযায়ী)</div>
     </div>
 </div>
 
@@ -36,8 +86,9 @@
                 <th>SKU</th>
                 <th>বর্তমান স্টক</th>
                 <th>গড় ক্রয়মূল্য (WAC)</th>
+                <th>স্টকের ক্রয়মূল্য</th>
                 <th>বিক্রয় দর</th>
-                <th>স্টক স্ট্যাটাস</th>
+                <th>স্ট্যাটাস</th>
                 <th>অ্যাকশন</th>
             </tr>
         </thead>
@@ -50,17 +101,21 @@
                 <td>{{ variant.colour }}</td>
                 <td><code>{{ variant.sku }}</code></td>
                 <td>
-                    <strong style="font-size: 1.05rem; {% if variant.current_stock <= 0 %}color: #b91c1c;{% elif variant.current_stock < 5 %}color: #b45309;{% else %}color: #15803d;{% endif %}">
+                    <strong style="font-size: 1.05rem; {% if variant.current_stock <= 0 %}color: #b91c1c;{% elif variant.current_stock <= variant.low_stock_threshold %}color: #b45309;{% else %}color: #15803d;{% endif %}">
                         {{ variant.current_stock }} জোড়া
                     </strong>
                 </td>
                 <td>৳ {{ variant.weighted_avg_cost|intcomma }}</td>
+                <td>
+                    <!-- Stock Value = current_stock * weighted_avg_cost -->
+                    ৳ {% widthratio variant.current_stock 1 variant.weighted_avg_cost as val %}{{ val|default:"0"|intcomma }}
+                </td>
                 <td>৳ {{ variant.standard_selling_price|intcomma }}</td>
                 <td>
                     {% if variant.current_stock <= 0 %}
                         <span class="day-badge day-closed">স্টক শেষ</span>
-                    {% elif variant.current_stock < 5 %}
-                        <span class="day-badge" style="background: #fef3c7; color: #b45309;">কম স্টক</span>
+                    {% elif variant.current_stock <= variant.low_stock_threshold %}
+                        <span class="day-badge" style="background: #fef3c7; color: #b45309;">কম স্টক (≤{{ variant.low_stock_threshold }})</span>
                     {% else %}
                         <span class="day-badge day-open">পর্যাপ্ত</span>
                     {% endif %}
@@ -73,8 +128,8 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                    কোনো জুতার রেকর্ড পাওয়া যায়নি। উপরের বাটনে ক্লিক করে নতুন মডেল যোগ করুন অথবা CSV ফাইল থেকে ইমপোর্ট করুন।
+                <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    কোনো জুতার রেকর্ড পাওয়া যায়নি। উপরের "+ নতুন জুতার মডেল যোগ করুন" বাটনে ক্লিক করে নতুন মডেল যোগ করুন অথবা CSV ফাইল থেকে ইমপোর্ট করুন।
                 </td>
             </tr>
             {% endfor %}
@@ -112,82 +167,292 @@
     </div>
 </div>
 
-<!-- New Product Model Modal -->
-<div id="new-product-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <form method="POST" action="{% url 'add_product' %}">
+<!-- ============================================================== -->
+<!-- SIMPLIFIED UNIFIED PRODUCT & VARIANTS MODAL                    -->
+<!-- ============================================================== -->
+<div id="unified-product-modal" class="modal-overlay" style="display: none; align-items: flex-start; overflow-y: auto; padding: 1.5rem 1rem; z-index: 9999;">
+    <div class="modal-content" style="max-width: 820px; width: 100%; border-radius: 12px; margin: 2rem auto; background: #ffffff; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        
+        <!-- Modal Header -->
+        <div style="background: #f8fafc; border-bottom: 1px solid var(--border-light); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+            <div>
+                <h3 style="color: #1e3a8a; margin: 0; font-size: 1.2rem; font-weight: 700;">+ জুতার মডেল ও ভ্যারিয়েন্ট যোগ করুন</h3>
+                <p style="margin: 3px 0 0; font-size: 0.82rem; color: var(--text-muted);">
+                    নতুন মডেল তৈরি করুন অথবা বিদ্যমান কোড দিয়ে আগের মডেলে নতুন সাইজ/কালার যুক্ত করুন
+                </p>
+            </div>
+            <button type="button" onclick="closeUnifiedProductModal()" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
+        </div>
+
+        <form id="unified-product-form" onsubmit="handleUnifiedProductSubmit(event)">
             {% csrf_token %}
-            <div class="modal-header">
-                <h3 style="color: #1e3a8a;">+ নতুন জুতার মডেল যোগ করুন</h3>
-                <button type="button" onclick="closeNewProductModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <div style="padding: 1.25rem 1.5rem; max-height: calc(85vh - 120px); overflow-y: auto;">
+                
+                <!-- Notice Banner when existing model is detected -->
+                <div id="existing-model-banner" style="display: none; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #1e40af;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>✓ <strong id="detected-model-title">বিদ্যমান মডেল পাওয়া গেছে</strong> — আপনি এই মডেলে নতুন সাইজ/কালার যোগ করছেন (কোনো ডুপ্লিকেট মডেল তৈরি হবে না)।</span>
+                        <span id="detected-model-badge" style="background: #dbeafe; color: #1e40af; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem;">বিদ্যমান</span>
+                    </div>
+                    <div id="existing-variants-tags" style="margin-top: 5px; font-size: 0.78rem; color: #3b82f6;"></div>
+                </div>
+
+                <!-- Section 1: Product Information -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.15rem 1.25rem; margin-bottom: 1.25rem;">
+                    <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="background: #1e3a8a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">1</span>
+                        জুতার মডেল তথ্য (Product Information)
+                    </div>
+
+                    <!-- Category Button Selection -->
+                    <div style="margin-bottom: 1.1rem;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 0.4rem;">
+                            ক্যাটাগরি (Category) <span style="color: red;">*</span>:
+                        </label>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;" id="category-button-group">
+                            <button type="button" class="btn-category active" data-cat="Gents" onclick="selectCategory('Gents')">
+                                👨 Gents (পুরুষ)
+                            </button>
+                            <button type="button" class="btn-category" data-cat="Ladies" onclick="selectCategory('Ladies')">
+                                👩 Ladies (মহিলা)
+                            </button>
+                            <button type="button" class="btn-category" data-cat="Kids" onclick="selectCategory('Kids')">
+                                🧒 Kids (বাচ্চা)
+                            </button>
+                        </div>
+                        <input type="hidden" id="model-category" value="Gents">
+                        <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">
+                            ক্যাটাগরি অনুযায়ী সাইজের তালিকা স্বয়ংক্রিয়ভাবে পরিবর্তিত হবে।
+                        </small>
+                    </div>
+
+                    <!-- Code, Name, Brand Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 0.9rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 0.3rem;">
+                                জুতার কোড (Code) <span style="color: red;">*</span>:
+                            </label>
+                            <input type="text" id="model-code" class="form-control" placeholder="যেমন: M0001, L102" required oninput="handleProductCodeInput()" style="text-transform: uppercase;">
+                            <small style="color: var(--text-muted); font-size: 0.73rem;">জুতার গায়ে মুদ্রিত ইউনিক কোড</small>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 0.3rem;">
+                                মডেলের নাম (Model Name) <span style="color: red;">*</span>:
+                            </label>
+                            <input type="text" id="model-name" class="form-control" placeholder="যেমন: Formal Leather Oxford" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 0.3rem;">
+                                ব্র্যান্ড (Brand):
+                            </label>
+                            <input type="text" id="model-brand" class="form-control" value="Lotus" placeholder="Lotus">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Variant Cards -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.15rem 1.25rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="background: #1e3a8a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">2</span>
+                            সাইজ ও কালার ভ্যারিয়েন্ট (Variants)
+                        </div>
+                        <button type="button" onclick="addVariantCard()" class="btn btn-secondary btn-sm" style="font-weight: 600; font-size: 0.82rem; padding: 6px 12px;">
+                            + আরও সাইজ/কালার যোগ করুন
+                        </button>
+                    </div>
+
+                    <!-- Container for Variant Cards -->
+                    <div id="variant-cards-container" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                        <!-- Injected dynamically -->
+                    </div>
+
+                    <!-- Quick Suggestions for Colours -->
+                    <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed #e2e8f0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">জনপ্রিয় কালার:</span>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('Black')">Black</button>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('Brown')">Brown</button>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('Tan')">Tan</button>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('Navy')">Navy</button>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('White')">White</button>
+                        <button type="button" class="btn-color-pill" onclick="applyQuickColor('Cherry')">Cherry</button>
+                    </div>
+                </div>
+
+                <!-- Section 3: Live Summary & Error Display -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                    <div style="font-size: 0.9rem; color: #334155; font-weight: 600; display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <span><strong id="live-total-variants" style="color: #1e3a8a;">1</strong> variant</span>
+                        <span>|</span>
+                        <span><strong id="live-total-pairs" style="color: #0284c7;">0</strong> pairs</span>
+                        <span>|</span>
+                        <span>Opening stock value: <strong id="live-total-val" style="color: #15803d;">৳ 0.00</strong></span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        *স্টক থাকলে ক্রয়মূল্য আবশ্যক
+                    </div>
+                </div>
+
+                <!-- Error Messages Box -->
+                <div id="modal-error-box" style="display: none; margin-top: 0.85rem; padding: 0.75rem 1rem; background: #fee2e2; border-left: 4px solid #b91c1c; color: #991b1b; border-radius: 4px; font-size: 0.85rem;"></div>
+
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">প্রোডাক্ট / জুতার কোড (Product Code):</label>
-                    <input type="text" name="code" class="form-control" placeholder="যেমন: M0001, L200" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">জুতার নাম বা মডেল (Model Name):</label>
-                    <input type="text" name="name" class="form-control" placeholder="যেমন: Formal Leather Oxford" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ক্যাটাগরি:</label>
-                    <input type="text" name="category" class="form-control" value="Men">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ব্র্যান্ড:</label>
-                    <input type="text" name="brand" class="form-control" value="Lotus">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" onclick="closeNewProductModal()" class="btn btn-secondary">বাতিল</button>
-                <button type="submit" class="btn btn-primary">সংরক্ষণ করুন</button>
+
+            <!-- Modal Footer: Only Cancel and Save -->
+            <div style="padding: 0.9rem 1.5rem; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 0.75rem; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                <button type="button" onclick="closeUnifiedProductModal()" class="btn btn-secondary" style="padding: 7px 18px;">
+                    বাতিল (Cancel)
+                </button>
+                <button type="submit" id="save-unified-btn" class="btn btn-primary" style="font-weight: 700; padding: 7px 24px; box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);">
+                    ✓ সংরক্ষণ করুন (Save Product)
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- New Variant Modal -->
-<div id="new-variant-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <form method="POST" action="{% url 'add_variant' %}">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h3 style="color: #1e3a8a;">+ নতুন সাইজ ও কালার ভ্যারিয়েন্ট যোগ করুন</h3>
-                <button type="button" onclick="closeNewVariantModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+<!-- ============================================================== -->
+<!-- SIZE PICKER POPUP (MODAL OVERLAY)                              -->
+<!-- ============================================================== -->
+<div id="size-picker-modal" class="modal-overlay" style="display: none; z-index: 10000; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.65);">
+    <div style="background: #ffffff; border-radius: 12px; max-width: 480px; width: 92%; padding: 1.25rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">
+            <h4 style="margin: 0; font-size: 1.05rem; color: #1e3a8a; font-weight: 700;">
+                📏 সাইজ নির্বাচন করুন (<span id="picker-cat-title">Gents</span>)
+            </h4>
+            <button type="button" onclick="closeSizePicker()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
+        </div>
+
+        <!-- Kids Groups Bar (Visible only when category is Kids) -->
+        <div id="kids-group-bar" style="display: none; margin-bottom: 1rem; background: #f1f5f9; padding: 0.6rem 0.8rem; border-radius: 8px;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.4rem;">
+                বাচ্চাদের সাইজ গ্রুপ সিলেক্ট করুন (Group):
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">জুতার মূল মডেল:</label>
-                    <select name="product_id" class="form-control" required>
-                        <option value="">-- মডেল সিলেক্ট করুন --</option>
-                        {% for prod in products %}
-                            <option value="{{ prod.id }}">{{ prod.code }} - {{ prod.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">সাইজ (Size):</label>
-                    <input type="text" name="size" class="form-control" placeholder="যেমন: 39, 40, 41, 42 বা 7, 8" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">কালার (Colour):</label>
-                    <input type="text" name="colour" class="form-control" placeholder="যেমন: Black, Brown, Tan" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">প্রাথমিক বিক্রয় দর (Selling Price):</label>
-                    <input type="number" step="0.01" name="selling_price" class="form-control" value="0.00" required>
-                </div>
+            <div style="display: flex; gap: 0.4rem; justify-content: space-between;">
+                <button type="button" class="btn-kids-group active" data-grp="A" onclick="selectKidsGroup('A')">Group A</button>
+                <button type="button" class="btn-kids-group" data-grp="B" onclick="selectKidsGroup('B')">Group B</button>
+                <button type="button" class="btn-kids-group" data-grp="C" onclick="selectKidsGroup('C')">Group C</button>
+                <button type="button" class="btn-kids-group" data-grp="D" onclick="selectKidsGroup('D')">Group D</button>
+                <button type="button" class="btn-kids-group" data-grp="E" onclick="selectKidsGroup('E')">Group E</button>
             </div>
-            <div class="modal-footer">
-                <button type="button" onclick="closeNewVariantModal()" class="btn btn-secondary">বাতিল</button>
-                <button type="submit" class="btn btn-primary">ভ্যারিয়েন্ট তৈরি করুন</button>
+            <div id="kids-group-desc" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 5px;"></div>
+        </div>
+
+        <!-- Size Chips Grid -->
+        <div style="margin-bottom: 1.25rem;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem;">
+                সাইজে ক্লিক করে নির্বাচন সম্পন্ন করুন:
             </div>
-        </form>
+            <div id="size-chips-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <!-- Chips injected here -->
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+            <button type="button" onclick="closeSizePicker()" class="btn btn-secondary btn-sm">বন্ধ করুন</button>
+        </div>
     </div>
 </div>
+
+<style>
+    /* Category Selector Buttons */
+    .btn-category {
+        background: #f8fafc;
+        border: 2px solid #cbd5e1;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 7px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+    }
+    .btn-category:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+    .btn-category.active {
+        background: #eff6ff;
+        border-color: #2563eb;
+        color: #1e40af;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Kids Group Buttons */
+    .btn-kids-group {
+        flex: 1;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 5px 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.12s;
+    }
+    .btn-kids-group.active {
+        background: #0284c7;
+        border-color: #0284c7;
+        color: #ffffff;
+    }
+
+    /* Size Chips */
+    .size-chip-btn {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        color: #1e293b;
+        font-size: 0.95rem;
+        font-weight: 700;
+        min-width: 50px;
+        height: 42px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+    .size-chip-btn:hover {
+        background: #f1f5f9;
+        border-color: #0284c7;
+        color: #0284c7;
+        transform: translateY(-1px);
+    }
+
+    /* Quick Color Pills */
+    .btn-color-pill {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 0.72rem;
+        color: #475569;
+        cursor: pointer;
+    }
+    .btn-color-pill:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    /* Variant Card Styles */
+    .variant-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        position: relative;
+        transition: border-color 0.15s;
+    }
+    .variant-card:hover {
+        border-color: #cbd5e1;
+    }
+</style>
 
 <script>
+    // --- Stock Adjustment Modal Logic ---
     function openStockAdjustModal(id, sku, currentStock) {
         document.getElementById('adj-variant-id').value = id;
         document.getElementById('adj-sku').textContent = sku;
@@ -198,17 +463,549 @@
     function closeStockAdjustModal() {
         document.getElementById('stock-adjust-modal').style.display = 'none';
     }
-    function openNewProductModal() {
-        document.getElementById('new-product-modal').style.display = 'flex';
+
+    // ==========================================================
+    // SIZE DEFINITIONS PER SPECIFICATION
+    // ==========================================================
+    const SIZE_CONFIGS = {
+        'Gents': ['40', '41', '42', '43', '44', '45', '46', '47', '48'],
+        'Ladies': ['35', '36', '37', '38', '39', '40', '41'],
+        'Kids': {
+            'A': ['15', '16', '17', '18', '19', '20', '21'],
+            'B': ['21', '22', '23', '24', '25', '26', '27'],
+            'C': ['26', '27', '28', '29', '30', '31', '32'],
+            'D': ['31', '32', '33', '34', '35', '36', '37', '38'],
+            'E': ['36', '37', '38', '39', '40']
+        }
+    };
+
+    let variantCounter = 0;
+    let activeSizePickerCardId = null;
+    let activeKidsGroup = 'A';
+    let codeSearchTimeout = null;
+    let isExistingModelDetected = false;
+    let existingProductId = null;
+
+    // --- Category Selection ---
+    function selectCategory(cat) {
+        const currentCat = document.getElementById('model-category').value;
+        if (currentCat === cat) return;
+
+        document.getElementById('model-category').value = cat;
+
+        // Update button active state
+        document.querySelectorAll('#category-button-group .btn-category').forEach(btn => {
+            if (btn.getAttribute('data-cat') === cat) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Clear all variant sizes since category changed
+        const cards = document.querySelectorAll('#variant-cards-container .variant-card');
+        cards.forEach(card => {
+            const cardId = card.getAttribute('data-id');
+            clearCardSize(cardId);
+        });
+
+        updateAllSKUs();
     }
-    function closeNewProductModal() {
-        document.getElementById('new-product-modal').style.display = 'none';
+
+    function clearCardSize(cardId) {
+        document.getElementById(`v-size-val-${cardId}`).value = '';
+        document.getElementById(`v-kids-group-${cardId}`).value = '';
+        const btn = document.getElementById(`v-size-btn-${cardId}`);
+        btn.textContent = 'সাইজ নির্বাচন করুন';
+        btn.style.color = '#0284c7';
+        btn.style.borderColor = '#0284c7';
+        btn.style.background = '#f0f9ff';
     }
-    function openNewVariantModal() {
-        document.getElementById('new-variant-modal').style.display = 'flex';
+
+    // --- Size Picker Modal Logic ---
+    function openSizePicker(cardId) {
+        activeSizePickerCardId = cardId;
+        const cat = document.getElementById('model-category').value;
+        document.getElementById('picker-cat-title').textContent = cat;
+
+        const kidsBar = document.getElementById('kids-group-bar');
+        if (cat === 'Kids') {
+            kidsBar.style.display = 'block';
+            selectKidsGroup(activeKidsGroup || 'A');
+        } else {
+            kidsBar.style.display = 'none';
+            renderCategorySizes(cat);
+        }
+
+        document.getElementById('size-picker-modal').style.display = 'flex';
     }
-    function closeNewVariantModal() {
-        document.getElementById('new-variant-modal').style.display = 'none';
+
+    function closeSizePicker() {
+        document.getElementById('size-picker-modal').style.display = 'none';
+        activeSizePickerCardId = null;
+    }
+
+    function selectKidsGroup(grp) {
+        activeKidsGroup = grp;
+        document.querySelectorAll('.btn-kids-group').forEach(b => {
+            if (b.getAttribute('data-grp') === grp) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+
+        const grpSizes = SIZE_CONFIGS.Kids[grp];
+        document.getElementById('kids-group-desc').textContent = `Group ${grp} মাপ: ${grpSizes.join(', ')}`;
+        renderSizeChips(grpSizes, true, grp);
+    }
+
+    function renderCategorySizes(cat) {
+        const sizes = SIZE_CONFIGS[cat] || [];
+        renderSizeChips(sizes, false, null);
+    }
+
+    function renderSizeChips(sizes, isKids, kidsGroup) {
+        const container = document.getElementById('size-chips-container');
+        container.innerHTML = '';
+
+        sizes.forEach(sz => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'size-chip-btn';
+            btn.textContent = sz;
+            btn.onclick = function() {
+                applySelectedSize(sz, isKids, kidsGroup);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function applySelectedSize(size, isKids, kidsGroup) {
+        if (!activeSizePickerCardId) return;
+
+        const cardId = activeSizePickerCardId;
+        const sizeValInput = document.getElementById(`v-size-val-${cardId}`);
+        const kidsGroupInput = document.getElementById(`v-kids-group-${cardId}`);
+        const sizeBtn = document.getElementById(`v-size-btn-${cardId}`);
+
+        if (isKids && kidsGroup) {
+            sizeValInput.value = size;
+            kidsGroupInput.value = kidsGroup;
+            sizeBtn.textContent = `Group ${kidsGroup} / Size ${size}`;
+        } else {
+            sizeValInput.value = size;
+            kidsGroupInput.value = '';
+            sizeBtn.textContent = `Size ${size}`;
+        }
+
+        sizeBtn.style.color = '#15803d';
+        sizeBtn.style.borderColor = '#15803d';
+        sizeBtn.style.background = '#f0fdf4';
+
+        updateCardSKU(cardId);
+        closeSizePicker();
+    }
+
+    // --- Variant Card Management ---
+    function addVariantCard(defaults = {}) {
+        variantCounter++;
+        const id = variantCounter;
+        const container = document.getElementById('variant-cards-container');
+
+        const card = document.createElement('div');
+        card.className = 'variant-card';
+        card.id = `variant-card-${id}`;
+        card.setAttribute('data-id', id);
+
+        const defaultPrice = defaults.price || '';
+        const defaultCost = defaults.cost || '';
+        const defaultQty = defaults.qty !== undefined ? defaults.qty : '0';
+        const defaultColour = defaults.colour || '';
+
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <strong style="color: #1e3a8a; font-size: 0.88rem;" class="variant-card-title">Variant ${document.querySelectorAll('.variant-card').length + 1}</strong>
+                    <span id="v-sku-preview-${id}" style="font-family: monospace; font-size: 0.72rem; color: #64748b; background: #e2e8f0; padding: 1px 6px; border-radius: 4px;">SKU: AUTO</span>
+                </div>
+                <button type="button" onclick="removeVariantCard(${id})" style="background: none; border: none; color: #ef4444; font-size: 1.15rem; cursor: pointer; padding: 0 4px;" title="রিমুভ করুন">&times;</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1fr; gap: 0.65rem; align-items: end;">
+                <!-- 1. Size Selection Button -->
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem;">
+                        সাইজ (Size) <span style="color: red;">*</span>:
+                    </label>
+                    <input type="hidden" id="v-size-val-${id}" value="${defaults.size || ''}">
+                    <input type="hidden" id="v-kids-group-${id}" value="${defaults.kids_group || ''}">
+                    <button type="button" id="v-size-btn-${id}" onclick="openSizePicker(${id})" 
+                            style="width: 100%; padding: 6px 8px; border: 1.5px solid #0284c7; background: #f0f9ff; color: #0284c7; font-weight: 600; border-radius: 6px; font-size: 0.82rem; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${defaults.size ? (defaults.kids_group ? `Group ${defaults.kids_group} / Size ${defaults.size}` : `Size ${defaults.size}`) : 'সাইজ নির্বাচন করুন'}
+                    </button>
+                </div>
+
+                <!-- 2. Colour Input -->
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem;">
+                        কালার (Colour) <span style="color: red;">*</span>:
+                    </label>
+                    <input type="text" id="v-colour-${id}" class="form-control" value="${defaultColour}" placeholder="Black, Brown..." required oninput="updateCardSKU(${id})" style="padding: 5px 8px; font-size: 0.85rem;">
+                </div>
+
+                <!-- 3. Cost Price -->
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem;">
+                        ক্রয়মূল্য (Cost):
+                    </label>
+                    <input type="number" step="0.01" min="0" id="v-cost-${id}" class="form-control" value="${defaultCost}" placeholder="0.00" oninput="updateCardCalculations(${id})" style="padding: 5px 8px; font-size: 0.85rem;">
+                </div>
+
+                <!-- 4. Selling Price -->
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem;">
+                        বিক্রয় দর (Price):
+                    </label>
+                    <input type="number" step="0.01" min="0" id="v-price-${id}" class="form-control" value="${defaultPrice}" placeholder="0.00" style="padding: 5px 8px; font-size: 0.85rem;">
+                </div>
+
+                <!-- 5. Opening Stock (Pairs) -->
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem;">
+                        প্রারম্ভিক স্টক:
+                    </label>
+                    <input type="number" min="0" id="v-qty-${id}" class="form-control" value="${defaultQty}" placeholder="0" oninput="updateCardCalculations(${id})" style="padding: 5px 8px; font-size: 0.85rem;">
+                </div>
+            </div>
+
+            <!-- Card Sub-bar: Opening stock value for this card -->
+            <div style="margin-top: 0.4rem; display: flex; justify-content: flex-end; font-size: 0.75rem; color: #15803d; font-weight: 600;">
+                <span id="v-val-preview-${id}">স্টক ভ্যালু: ৳ 0.00</span>
+            </div>
+        `;
+
+        container.appendChild(card);
+        updateCardCalculations(id);
+        updateCardSKU(id);
+        renumberVariantCards();
+    }
+
+    function removeVariantCard(id) {
+        const cards = document.querySelectorAll('.variant-card');
+        if (cards.length <= 1) {
+            alert('কমপক্ষে একটি ভ্যারিয়েন্ট থাকা আবশ্যক।');
+            return;
+        }
+        const card = document.getElementById(`variant-card-${id}`);
+        if (card) {
+            card.remove();
+            renumberVariantCards();
+            updateLiveSummary();
+        }
+    }
+
+    function renumberVariantCards() {
+        const cards = document.querySelectorAll('.variant-card');
+        cards.forEach((c, idx) => {
+            const title = c.querySelector('.variant-card-title');
+            if (title) title.textContent = `Variant ${idx + 1}`;
+        });
+    }
+
+    function applyQuickColor(colourName) {
+        // Apply to the last empty variant colour or all empty
+        const cards = document.querySelectorAll('.variant-card');
+        let applied = false;
+        cards.forEach(c => {
+            const id = c.getAttribute('data-id');
+            const colourInput = document.getElementById(`v-colour-${id}`);
+            if (colourInput && !colourInput.value.trim() && !applied) {
+                colourInput.value = colourName;
+                updateCardSKU(id);
+                applied = true;
+            }
+        });
+        if (!applied && cards.length > 0) {
+            const lastId = cards[cards.length - 1].getAttribute('data-id');
+            const colourInput = document.getElementById(`v-colour-${lastId}`);
+            if (colourInput) {
+                colourInput.value = colourName;
+                updateCardSKU(lastId);
+            }
+        }
+    }
+
+    function updateCardCalculations(id) {
+        const qty = parseInt(document.getElementById(`v-qty-${id}`).value || 0, 10);
+        const cost = parseFloat(document.getElementById(`v-cost-${id}`).value || 0);
+        const preview = document.getElementById(`v-val-preview-${id}`);
+
+        const val = (qty > 0 && cost > 0) ? (qty * cost) : 0;
+        preview.textContent = `স্টক ভ্যালু: ৳ ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        updateLiveSummary();
+    }
+
+    function updateCardSKU(id) {
+        const code = (document.getElementById('model-code').value || '').trim().replace(/\s+/g, '-').toUpperCase();
+        const rawSize = (document.getElementById(`v-size-val-${id}`).value || '').trim();
+        const kidsGroup = (document.getElementById(`v-kids-group-${id}`).value || '').trim().toUpperCase();
+        const colour = (document.getElementById(`v-colour-${id}`).value || '').trim().replace(/\s+/g, '-').toUpperCase();
+
+        const preview = document.getElementById(`v-sku-preview-${id}`);
+        if (!code) {
+            preview.textContent = 'SKU: AUTO';
+            return;
+        }
+
+        let sizePart = rawSize;
+        if (kidsGroup && rawSize) {
+            sizePart = `${kidsGroup}-${rawSize}`;
+        }
+
+        if (sizePart && colour) {
+            preview.textContent = `SKU: ${code}-${sizePart}-${colour}`;
+        } else if (sizePart) {
+            preview.textContent = `SKU: ${code}-${sizePart}-...`;
+        } else {
+            preview.textContent = `SKU: ${code}-...`;
+        }
+    }
+
+    function updateAllSKUs() {
+        const cards = document.querySelectorAll('.variant-card');
+        cards.forEach(c => {
+            const id = c.getAttribute('data-id');
+            updateCardSKU(id);
+        });
+    }
+
+    function updateLiveSummary() {
+        const cards = document.querySelectorAll('.variant-card');
+        let totalQty = 0;
+        let totalVal = 0;
+
+        cards.forEach(c => {
+            const id = c.getAttribute('data-id');
+            const qty = parseInt(document.getElementById(`v-qty-${id}`).value || 0, 10);
+            const cost = parseFloat(document.getElementById(`v-cost-${id}`).value || 0);
+
+            if (qty > 0) totalQty += qty;
+            if (qty > 0 && cost > 0) totalVal += (qty * cost);
+        });
+
+        document.getElementById('live-total-variants').textContent = cards.length;
+        document.getElementById('live-total-pairs').textContent = totalQty;
+        document.getElementById('live-total-val').textContent = '৳ ' + totalVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // --- Product Code Autocomplete & Existing Model Detection ---
+    function handleProductCodeInput() {
+        updateAllSKUs();
+
+        const codeInput = document.getElementById('model-code');
+        const code = codeInput.value.trim().toUpperCase();
+
+        if (codeSearchTimeout) clearTimeout(codeSearchTimeout);
+
+        if (!code || code.length < 2) {
+            hideExistingModelBanner();
+            return;
+        }
+
+        codeSearchTimeout = setTimeout(() => {
+            fetch(`{% url 'get_existing_product_variants_api' %}?code=${encodeURIComponent(code)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.found && data.product) {
+                        showExistingModelBanner(data.product, data.variants);
+                    } else {
+                        hideExistingModelBanner();
+                    }
+                })
+                .catch(() => {
+                    hideExistingModelBanner();
+                });
+        }, 300);
+    }
+
+    function showExistingModelBanner(product, variants) {
+        isExistingModelDetected = true;
+        existingProductId = product.id;
+
+        const banner = document.getElementById('existing-model-banner');
+        document.getElementById('detected-model-title').textContent = `${product.code} - ${product.name} (${product.category})`;
+        
+        const tagsDiv = document.getElementById('existing-variants-tags');
+        if (variants && variants.length > 0) {
+            const items = variants.map(v => `${v.size}/${v.colour} (স্টক: ${v.current_stock})`).join(', ');
+            tagsDiv.innerHTML = `<strong>বর্তমান সাইজ ও কালার:</strong> ${items}`;
+        } else {
+            tagsDiv.innerHTML = '<em>এই মডেলে এখনও কোনো ভ্যারিয়েন্ট নেই।</em>';
+        }
+
+        banner.style.display = 'block';
+
+        // Prepopulate model fields and lock name/category to avoid confusion
+        document.getElementById('model-name').value = product.name;
+        document.getElementById('model-brand').value = product.brand || 'Lotus';
+        
+        // Select category
+        if (product.category && ['Gents', 'Ladies', 'Kids'].includes(product.category)) {
+            selectCategory(product.category);
+        }
+    }
+
+    function hideExistingModelBanner() {
+        isExistingModelDetected = false;
+        existingProductId = null;
+        document.getElementById('existing-model-banner').style.display = 'none';
+    }
+
+    // --- Open / Close Unified Modal ---
+    function openUnifiedProductModal() {
+        document.getElementById('unified-product-form').reset();
+        document.getElementById('variant-cards-container').innerHTML = '';
+        document.getElementById('modal-error-box').style.display = 'none';
+        document.getElementById('modal-error-box').innerHTML = '';
+        hideExistingModelBanner();
+        variantCounter = 0;
+
+        // Default to Gents
+        selectCategory('Gents');
+        document.getElementById('model-brand').value = 'Lotus';
+
+        // Add 1 default variant card
+        addVariantCard();
+
+        document.getElementById('unified-product-modal').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('model-code').focus();
+        }, 100);
+    }
+
+    function closeUnifiedProductModal() {
+        document.getElementById('unified-product-modal').style.display = 'none';
+    }
+
+    // --- Form Submission Handler ---
+    function handleUnifiedProductSubmit(event) {
+        event.preventDefault();
+        const errorBox = document.getElementById('modal-error-box');
+        errorBox.style.display = 'none';
+        errorBox.innerHTML = '';
+
+        const code = document.getElementById('model-code').value.trim().toUpperCase();
+        const name = document.getElementById('model-name').value.trim();
+        const category = document.getElementById('model-category').value.trim();
+        const brand = document.getElementById('model-brand').value.trim();
+
+        if (!code) {
+            errorBox.innerHTML = 'প্রোডাক্ট কোড আবশ্যক।';
+            errorBox.style.display = 'block';
+            return;
+        }
+        if (!name) {
+            errorBox.innerHTML = 'মডেলের নাম আবশ্যক।';
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        const cards = document.querySelectorAll('.variant-card');
+        if (cards.length === 0) {
+            errorBox.innerHTML = 'কমপক্ষে একটি ভ্যারিয়েন্ট যোগ করতে হবে।';
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        const variants = [];
+        const seenCombinations = new Set();
+        const clientErrors = [];
+
+        cards.forEach((c, idx) => {
+            const id = c.getAttribute('data-id');
+            const size = document.getElementById(`v-size-val-${id}`).value.trim();
+            const kidsGroup = document.getElementById(`v-kids-group-${id}`).value.trim().toUpperCase();
+            const colour = document.getElementById(`v-colour-${id}`).value.trim();
+            const qty = parseInt(document.getElementById(`v-qty-${id}`).value || 0, 10);
+            const cost = parseFloat(document.getElementById(`v-cost-${id}`).value || 0);
+            const price = parseFloat(document.getElementById(`v-price-${id}`).value || 0);
+
+            if (!size) {
+                clientErrors.push(`ভ্যারিয়েন্ট #${idx + 1}: সাইজ নির্বাচন করুন।`);
+            }
+            if (!colour) {
+                clientErrors.push(`ভ্যারিয়েন্ট #${idx + 1}: কালার লিখুন।`);
+            }
+            if (qty > 0 && cost <= 0) {
+                clientErrors.push(`ভ্যারিয়েন্ট #${idx + 1}: প্রারম্ভিক স্টক (${qty} জোড়া) থাকলে ক্রয়মূল্য অবশ্যই ০ এর বেশি হতে হবে।`);
+            }
+
+            const finalSizeKey = (category === 'Kids' && kidsGroup) ? `${kidsGroup}-${size}` : size;
+            const comboKey = `${finalSizeKey.toUpperCase()}__${colour.toUpperCase()}`;
+
+            if (seenCombinations.has(comboKey)) {
+                clientErrors.push(`ভ্যারিয়েন্ট #${idx + 1}: একই সাইজ (${finalSizeKey}) ও কালার (${colour}) একাধিকবার দেওয়া হয়েছে।`);
+            } else {
+                seenCombinations.add(comboKey);
+            }
+
+            variants.push({
+                size: size,
+                kids_group: kidsGroup,
+                colour: colour,
+                opening_qty: qty,
+                cost_price: cost,
+                selling_price: price
+            });
+        });
+
+        if (clientErrors.length > 0) {
+            errorBox.innerHTML = clientErrors.join('<br>');
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        const payload = {
+            operation: isExistingModelDetected ? 'add_to_existing' : 'new_model',
+            existing_product_id: existingProductId,
+            code: code,
+            name: name,
+            category: category,
+            brand: brand,
+            variants: variants
+        };
+
+        const saveBtn = document.getElementById('save-unified-btn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'সংরক্ষণ করা হচ্ছে...';
+
+        fetch('{% url "create_product_unified" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json().then(data => ({ status: res.status, body: data })))
+        .then(res => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '✓ সংরক্ষণ করুন (Save Product)';
+
+            if (res.body.success) {
+                alert(res.body.message || 'সফলভাবে সংরক্ষিত হয়েছে!');
+                window.location.reload();
+            } else {
+                const errs = res.body.errors || [res.body.error || 'সংরক্ষণে ব্যর্থ হয়েছে।'];
+                errorBox.innerHTML = Array.isArray(errs) ? errs.join('<br>') : errs;
+                errorBox.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '✓ সংরক্ষণ করুন (Save Product)';
+            errorBox.innerHTML = 'সার্ভারের সাথে সংযোগে ত্রুটি: ' + err;
+            errorBox.style.display = 'block';
+        });
     }
 </script>
 {% endblock %}

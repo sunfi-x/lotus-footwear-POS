@@ -29,7 +29,8 @@ class BillingService:
     @transaction.atomic
     def create_invoice(cls, business_day, items, customer_name='', customer_phone='',
                        overall_discount_percent=Decimal('0.00'), manual_final_total=None,
-                       payment_method='CASH', amount_paid=Decimal('0.00'), user=None):
+                       payment_method='CASH', amount_paid=Decimal('0.00'), user=None,
+                       split_payments=None):
         """
         Creates an invoice atomically with all line items, inventory deductions,
         cost snapshots, and payment records.
@@ -100,16 +101,39 @@ class BillingService:
         if final_total < 0:
             raise ValueError("Final invoice total cannot be negative.")
 
-        # Determine payments and dues
-        amount_paid = Decimal(str(amount_paid)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-        if amount_paid >= final_total:
-            change_given = amount_paid - final_total
+        # Determine payments and dues (support split payments if provided)
+        parsed_split_payments = []
+        if split_payments:
+            for sp in split_payments:
+                sp_method = sp.get('payment_method') or sp.get('method') or 'CASH'
+                sp_amount = Decimal(str(sp.get('amount', 0))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                if sp_amount > Decimal('0.00'):
+                    parsed_split_payments.append({
+                        'method': sp_method,
+                        'amount': sp_amount
+                    })
+
+        if parsed_split_payments:
+            total_paid = sum(sp['amount'] for sp in parsed_split_payments)
+            distinct_methods = set(sp['method'] for sp in parsed_split_payments)
+            if len(distinct_methods) > 1:
+                sale_payment_method = 'SPLIT'
+            elif len(distinct_methods) == 1:
+                sale_payment_method = parsed_split_payments[0]['method']
+            else:
+                sale_payment_method = payment_method
+        else:
+            total_paid = Decimal(str(amount_paid)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            sale_payment_method = payment_method
+
+        if total_paid >= final_total:
+            change_given = total_paid - final_total
             balance_due = Decimal('0.00')
             recorded_initial_paid = final_total
         else:
             change_given = Decimal('0.00')
-            balance_due = final_total - amount_paid
-            recorded_initial_paid = amount_paid
+            balance_due = final_total - total_paid
+            recorded_initial_paid = total_paid
 
         # Generate unique invoice number
         invoice_no = cls.generate_invoice_number(business_day)
@@ -126,7 +150,7 @@ class BillingService:
             calculated_total=calculated_total,
             manual_adjustment=manual_adjustment,
             final_total=final_total,
-            payment_method=payment_method,
+            payment_method=sale_payment_method,
             amount_paid=recorded_initial_paid,
             change_given=change_given,
             balance_due=balance_due,
@@ -187,16 +211,36 @@ class BillingService:
                 user=user
             )
 
-        # 3. Create initial Payment record if any amount paid
+        # 3. Create initial Payment record(s) if any amount paid
         if recorded_initial_paid > 0:
-            Payment.objects.create(
-                sale=sale,
-                amount=recorded_initial_paid,
-                payment_method=payment_method,
-                payment_type='INITIAL',
-                received_by=user,
-                notes=f"Initial payment for invoice {sale.invoice_no}"
-            )
+            if parsed_split_payments:
+                rem_change = change_given
+                for sp in parsed_split_payments:
+                    sp_amt = sp['amount']
+                    if rem_change > 0 and sp['method'] == 'CASH':
+                        deduct = min(sp_amt, rem_change)
+                        sp_amt -= deduct
+                        rem_change -= deduct
+                    if sp_amt > Decimal('0.00'):
+                        Payment.objects.create(
+                            sale=sale,
+                            business_day=business_day,
+                            amount=sp_amt,
+                            payment_method=sp['method'],
+                            payment_type='INITIAL',
+                            received_by=user,
+                            notes=f"Initial payment ({sp['method']}) for invoice {sale.invoice_no}"
+                        )
+            else:
+                Payment.objects.create(
+                    sale=sale,
+                    business_day=business_day,
+                    amount=recorded_initial_paid,
+                    payment_method=payment_method,
+                    payment_type='INITIAL',
+                    received_by=user,
+                    notes=f"Initial payment for invoice {sale.invoice_no}"
+                )
 
         # 4. Audit Log
         AuditLog.log(
@@ -319,7 +363,7 @@ class BillingService:
 
     @classmethod
     @transaction.atomic
-    def record_due_collection(cls, sale_id, amount, payment_method='CASH', notes='', user=None):
+    def record_due_collection(cls, sale_id, amount, payment_method='CASH', notes='', user=None, business_day=None):
         """
         Records subsequent customer payment towards an outstanding balance.
         """
@@ -331,12 +375,16 @@ class BillingService:
         if amount > sale.balance_due:
             raise ValueError(f"Payment amount Tk {amount} exceeds outstanding due Tk {sale.balance_due}.")
 
+        if business_day is None:
+            business_day = BusinessDay.get_current() or sale.business_day
+
         sale.amount_paid += amount
         sale.balance_due -= amount
         sale.save(update_fields=['amount_paid', 'balance_due'])
 
         payment = Payment.objects.create(
             sale=sale,
+            business_day=business_day,
             amount=amount,
             payment_method=payment_method,
             payment_type='DUE_COLLECTION',

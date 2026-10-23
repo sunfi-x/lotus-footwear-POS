@@ -6,6 +6,7 @@ from .models import BusinessDay, AuditLog
 from pos.models import Sale, Payment, SaleReturn
 from expenses.models import Expense
 from backup_system.services import BackupService
+from reports.services import ReportingService
 
 class BusinessDayService:
 
@@ -50,36 +51,27 @@ class BusinessDayService:
 
     @classmethod
     @transaction.atomic
-    def close_day(cls, business_day, actual_cash_counted, discrepancy_reason='', notes='', user=None):
+    def close_day(cls, business_day, actual_cash_counted, discrepancy_reason='', notes='', other_cash_in=None, user=None):
         """
         Reconciles cash, triggers a mandatory day-end backup, and marks the business day as CLOSED.
+        Enforces discrepancy note when actual cash != expected cash.
         """
         if business_day.status != 'OPEN':
             raise ValueError("Only an OPEN business day can be closed.")
 
         actual_cash = Decimal(str(actual_cash_counted)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-        # 1. Calculate Expected System Cash
-        # Cash Receipts from sales & due collections
-        payments = Payment.objects.filter(
-            received_at__date=business_day.date,
-            payment_method='CASH'
-        )
-        total_cash_received = payments.aggregate(c=models.Sum('amount'))['c'] or Decimal('0.00')
+        if other_cash_in is not None and str(other_cash_in).strip() != '':
+            business_day.other_cash_in = Decimal(str(other_cash_in)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-        # Cash refunds from returns
-        returns = SaleReturn.objects.filter(business_day=business_day)
-        total_cash_refunds = returns.aggregate(r=models.Sum('refund_amount'))['r'] or Decimal('0.00')
-
-        # Cash expenses
-        cash_expenses = Expense.objects.filter(
-            payment_method='CASH',
-            expense_date=business_day.date
-        ).aggregate(e=models.Sum('amount'))['e'] or Decimal('0.00')
-
-        # System Cash Calculation
-        system_cash = business_day.opening_cash + total_cash_received - total_cash_refunds - cash_expenses
+        # 1. Calculate Expected System Cash via single authoritative ReportingService
+        overview = ReportingService.get_daily_overview(business_day)
+        system_cash = overview['expected_cash']
         discrepancy = actual_cash - system_cash
+
+        # Require a note/explanation if there is a discrepancy
+        if discrepancy != Decimal('0.00') and not discrepancy_reason.strip():
+            raise ValueError(f"ক্যাশ গরমিল রয়েছে (পার্থক্য: ৳ {discrepancy})। গরমিলের কারণ উল্লেখ করা বাধ্যতামূলক।")
 
         # 2. Mandatory Day-End Hot Backup
         backup_record, passed, details = BackupService.create_backup(backup_type='DAY_END', user=user)
@@ -90,12 +82,12 @@ class BusinessDayService:
         business_day.closing_cash_system = system_cash
         business_day.closing_cash_actual = actual_cash
         business_day.cash_discrepancy = discrepancy
-        business_day.discrepancy_reason = discrepancy_reason
+        business_day.discrepancy_reason = discrepancy_reason.strip()
         business_day.status = 'CLOSED'
         business_day.closed_at = timezone.now()
         business_day.closed_by = user
         if notes:
-            business_day.notes += f"\n[Closing notes]: {notes}"
+            business_day.notes = (business_day.notes + "\n" if business_day.notes else "") + f"[Closing notes]: {notes}"
         business_day.save()
 
         AuditLog.log(

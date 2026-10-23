@@ -17,6 +17,7 @@ class Sale(models.Model):
         ('NAGAD', 'Nagad (নগদ ডিজিটাল)'),
         ('CARD', 'Card (কার্ড)'),
         ('OTHER', 'Other (অন্যান্য)'),
+        ('SPLIT', 'Split / Multiple (মিশ্র)'),
     ]
 
     invoice_no = models.CharField(max_length=50, unique=True, db_index=True)
@@ -83,6 +84,7 @@ class Payment(models.Model):
     ]
 
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='payments')
+    business_day = models.ForeignKey(BusinessDay, on_delete=models.PROTECT, null=True, blank=True, related_name='payments')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=Sale.PAYMENT_METHODS, default='CASH')
     payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPES, default='INITIAL')

@@ -42,44 +42,80 @@
 </div>
 {% endif %}
 
-<!-- Stats Cards Grid -->
-<div class="stats-grid">
+<!-- Primary 6 KPI Cards for Staff Panel -->
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+    <!-- 1. PAIRS SOLD -->
     <div class="stat-card primary">
-        <div class="label">মোট বিক্রিত জুতা (Pairs Sold)</div>
-        <div class="value" style="color: #1e3a8a;">{{ overview.pairs_sold }} <span style="font-size: 1rem; font-weight: 500;">জোড়া</span></div>
+        <div class="label">মোট বিক্রিত জুতা (PAIRS SOLD)</div>
+        <div class="value" style="color: #1e3a8a;">
+            {{ overview.pairs_sold }} <span style="font-size: 1rem; font-weight: 500;">জোড়া</span>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            বিক্রয়: {{ overview.total_sold_pairs }} জোড়া | ফেরত: {{ overview.returned_pairs }} জোড়া
+        </div>
     </div>
-    <div class="stat-card primary">
-        <div class="label">সম্পন্ন ইনভয়েস (Completed Invoices)</div>
-        <div class="value" style="color: #0d9488;">{{ overview.completed_invoices }} <span style="font-size: 1rem; font-weight: 500;">টি</span></div>
-    </div>
-    <div class="stat-card success">
-        <div class="label">মোট চূড়ান্ত বিক্রয় (Net Sales)</div>
-        <div class="value" style="color: #15803d;">৳ {{ overview.net_sales|intcomma }}</div>
-    </div>
-    <div class="stat-card warning">
-        <div class="label">মোট ছাড় দেওয়া হয়েছে (Discounts)</div>
-        <div class="value" style="color: #b45309;">৳ {{ overview.total_discount|intcomma }}</div>
-    </div>
-</div>
 
-<div class="stats-grid">
-    <div class="stat-card success">
-        <div class="label">মোট নগদ গ্রহণ (Cash Received)</div>
-        <div class="value" style="color: #15803d;">৳ {{ overview.cash_received|intcomma }}</div>
-    </div>
+    <!-- 2. COMPLETED INVOICES -->
     <div class="stat-card primary">
-        <div class="label">ডিজিটাল পেমেন্ট (bKash/Card/Nagad)</div>
-        <div class="value" style="color: #2563eb;">৳ {{ overview.non_cash_received|intcomma }}</div>
+        <div class="label">সম্পন্ন ইনভয়েস (COMPLETED INVOICES)</div>
+        <div class="value" style="color: #0d9488;">
+            {{ overview.completed_invoices }} <span style="font-size: 1rem; font-weight: 500;">টি</span>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            সংরক্ষিত সম্পন্ন বিক্রয় ইনভয়েস
+        </div>
     </div>
-    <div class="stat-card danger">
-        <div class="label">বাকি / কাস্টমার ডিউ (Outstanding Dues)</div>
-        <div class="value" style="color: #b91c1c;">৳ {{ overview.customer_dues|intcomma }}</div>
+
+    <!-- 3. NET SALES -->
+    <div class="stat-card success">
+        <div class="label">মোট চূড়ান্ত বিক্রয় (NET SALES)</div>
+        <div class="value" style="color: #15803d;">
+            ৳ {{ overview.net_sales|intcomma }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            ইনভয়েসের চূড়ান্ত বিল (ফেরত বাদ দিয়ে)
+        </div>
     </div>
-    <div class="stat-card danger">
-        <div class="label">ফেরত ও বাতিল (Returns & Cancelled)</div>
-        <div class="value" style="font-size: 1.3rem;">
-            ফেরত: <strong>{{ overview.returns_count }}</strong> (৳ {{ overview.returns_amount|intcomma }}) <br>
-            <span style="font-size: 0.9rem; color: var(--text-muted);">বাতিল ইনভয়েস: {{ overview.cancelled_count }} টি</span>
+
+    <!-- 4. DISCOUNTS -->
+    <div class="stat-card warning">
+        <div class="label">মোট ছাড় (DISCOUNTS)</div>
+        <div class="value" style="color: #b45309;">
+            ৳ {{ overview.total_discount|intcomma }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            আজকের ইনভয়েসে প্রদত্ত ছাড়
+        </div>
+    </div>
+
+    <!-- 5. EXPECTED CASH -->
+    <div class="stat-card {% if overview.missing_opening_cash %}danger{% else %}success{% endif %}">
+        <div class="label">ক্যাশ ড্রয়ারে থাকার কথা (EXPECTED CASH)</div>
+        {% if overview.missing_opening_cash %}
+            <div class="value" style="color: #b91c1c; font-size: 1.15rem;">
+                ⚠️ প্রারম্ভিক ক্যাশ রেকর্ড নেই
+            </div>
+            <div style="font-size: 0.8rem; color: #b91c1c; margin-top: 4px;">
+                সঠিক হিসাব পেতে প্রারম্ভিক ক্যাশ দিয়ে দিন শুরু করুন
+            </div>
+        {% else %}
+            <div class="value" style="color: #15803d;">
+                ৳ {{ overview.expected_cash|intcomma }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                প্রারম্ভিক (৳ {{ overview.opening_cash|intcomma }}) + নগদ জমা (৳ {{ overview.cash_received|intcomma }}) + অন্যান্য (৳ {{ overview.other_cash_in|intcomma }}) − নগদ খরচ (৳ {{ overview.cash_expenses|intcomma }}) − রিফান্ড (৳ {{ overview.returns_amount|intcomma }})
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 6. DIGITAL PAYMENTS -->
+    <div class="stat-card primary">
+        <div class="label">ডিজিটাল পেমেন্ট (DIGITAL PAYMENTS: BKASH/CARD/NAGAD)</div>
+        <div class="value" style="color: #2563eb;">
+            ৳ {{ overview.digital_received|intcomma }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            বিকাশ, কার্ড ও নগদ ডিজিটাল মাধ্যমে প্রাপ্ত মোট টাকা
         </div>
     </div>
 </div>

@@ -74,6 +74,7 @@ def open_business_day_view(request):
 def close_business_day_view(request):
     if request.method == 'POST':
         actual_cash = request.POST.get('actual_cash', '0.00')
+        other_cash_in = request.POST.get('other_cash_in')
         discrepancy_reason = request.POST.get('discrepancy_reason', '')
         notes = request.POST.get('notes', '')
 
@@ -88,6 +89,7 @@ def close_business_day_view(request):
                 actual_cash_counted=actual_cash,
                 discrepancy_reason=discrepancy_reason,
                 notes=notes,
+                other_cash_in=other_cash_in,
                 user=request.user
             )
             diff_msg = f" (ক্যাশ গরমিল: ৳ {diff})" if diff != 0 else " (ক্যাশ সমতা সঠিক)"

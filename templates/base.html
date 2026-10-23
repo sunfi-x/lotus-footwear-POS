@@ -1,3 +1,4 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -48,6 +49,7 @@
                 <a href="{% url 'products_list' %}" class="btn btn-secondary btn-sm">👟 জুতার স্টক</a>
                 <a href="{% url 'purchases_list' %}" class="btn btn-secondary btn-sm">📦 নতুন চালান ক্রয়</a>
                 <a href="{% url 'expenses_list' %}" class="btn btn-secondary btn-sm">💸 খরচ</a>
+                <a href="{% url 'salesman_payments' %}" class="btn btn-secondary btn-sm" style="color: #1e3a8a; font-weight: 600;">👤 সেলসম্যান ও পেমেন্ট</a>
                 <a href="{% url 'reports_profit' %}" class="btn btn-secondary btn-sm">📈 লাভ-ক্ষতি রিপোর্ট</a>
                 <a href="{% url 'historical_search' %}" class="btn btn-secondary btn-sm">🔍 কোড দিয়ে বিক্রয় অনুসন্ধান</a>
                 <a href="{% url 'csv_migration' %}" class="btn btn-secondary btn-sm">📥 খাতা থেকে CSV ইমপোর্ট</a>
@@ -117,33 +119,96 @@
 
     <!-- Day Close Modal -->
     <div id="day-close-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <form method="POST" action="{% url 'close_business_day' %}">
+        <div class="modal-content" style="max-width: 620px;">
+            <form method="POST" action="{% url 'close_business_day' %}" id="day-close-form" onsubmit="return validateDayCloseForm()">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h3 style="color: #b45309;">🌙 আজকের ব্যবসা দিন সমাপ্তি (Save & Close Day)</h3>
+                    <h3 style="color: #b45309; display: flex; align-items: center; gap: 0.5rem;">
+                        🌙 <span>দিন সমাপ্তি ও ক্যাশ ড্রয়ার মিলানো (Day-End Cash Reconciliation)</span>
+                    </h3>
                     <button type="button" onclick="closeDayCloseModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert-box alert-warning" style="font-size: 0.85rem;">
-                        ⚠️ দিন সমাপ্ত করার সাথে সাথে স্বয়ংক্রিয়ভাবে একটি সুরক্ষিত ডাটাবেজ ব্যাকআপ নেওয়া হবে এবং ক্যাশ মিলানো হবে।
+                <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                    {% if day_reconciliation.missing_opening_cash %}
+                        <div class="alert-box alert-error" style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+                            ⚠️ <strong>সতর্কতা:</strong> প্রারম্ভিক ক্যাশ ড্রয়ার ব্যালেন্সের তথ্য অসম্পূর্ণ। ক্যাশ সমতায় গরমিল দেখা যেতে পারে।
+                        </div>
+                    {% endif %}
+
+                    <!-- Expected Cash Breakdown Table -->
+                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem; margin-bottom: 0.5rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.35rem;">
+                            📊 ক্যাশ ড্রয়ার হিসাব বিবরণী (Cash Drawer Breakdown)
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr auto; row-gap: 0.35rem; font-size: 0.9rem; align-items: center;">
+                            <span style="color: var(--text-muted);">১. প্রারম্ভিক ক্যাশ (Opening Cash):</span>
+                            <span style="font-weight: 600;">৳ {{ day_reconciliation.opening_cash|default:"0.00"|intcomma }}</span>
+
+                            <span style="color: var(--text-muted);">২. নগদ বিক্রয় ও আদায় (Cash Received):</span>
+                            <span style="font-weight: 600; color: #15803d;">+ ৳ {{ day_reconciliation.cash_received|default:"0.00"|intcomma }}</span>
+
+                            <span style="color: var(--text-muted);">৩. অন্যান্য ক্যাশ জমা (Other Cash In):</span>
+                            <span>
+                                <input type="number" step="0.01" name="other_cash_in" id="reconcile-other-cash" 
+                                       value="{{ day_reconciliation.other_cash_in|default:'0.00' }}" 
+                                       class="form-control" style="width: 120px; display: inline-block; padding: 2px 6px; font-size: 0.85rem; text-align: right;"
+                                       oninput="updateExpectedCashLive()">
+                            </span>
+
+                            <span style="color: var(--text-muted);">৪. দোকানের নগদ খরচ (Cash Expenses):</span>
+                            <span style="font-weight: 600; color: #b91c1c;">− ৳ {{ day_reconciliation.cash_expenses|default:"0.00"|intcomma }}</span>
+
+                            <span style="color: var(--text-muted);">৫. গ্রাহক ফেরত বাবদ ক্যাশ (Cash Refunds):</span>
+                            <span style="font-weight: 600; color: #b91c1c;">− ৳ {{ day_reconciliation.returns_amount|default:"0.00"|intcomma }}</span>
+                        </div>
+
+                        <div style="margin-top: 0.65rem; padding-top: 0.65rem; border-top: 2px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: #0f172a; font-size: 1rem;">ক্যাশ ড্রয়ারে থাকার কথা (Expected Cash):</span>
+                            <span id="reconcile-expected-display" style="font-size: 1.25rem; font-weight: 800; color: #1e3a8a;">
+                                ৳ {{ day_reconciliation.expected_cash|default:"0.00"|intcomma }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">হাতে গুনে পাওয়া আসল ক্যাশ (Physically Counted Cash in Tk):</label>
-                        <input type="number" step="0.01" name="actual_cash" class="form-control" required placeholder="ক্যাশ বাক্সে মোট কত টাকা রয়েছে">
+
+                    <!-- Actual Cash Count Input -->
+                    <div class="form-group" style="background: #fefce8; padding: 0.85rem; border-radius: 6px; border: 1.5px solid #fef08a;">
+                        <label class="form-label" style="font-weight: 700; color: #854d0e;">
+                            ★ হাতে গুনে পাওয়া আসল ক্যাশ (Actual Cash Count in Tk):
+                        </label>
+                        <input type="number" step="0.01" name="actual_cash" id="reconcile-actual-cash" class="form-control" 
+                               required placeholder="ক্যাশ বাক্সে মোট কত টাকা হাতে রয়েছে" 
+                               style="font-size: 1.3rem; font-weight: 700; color: #15803d; text-align: right;"
+                               oninput="updateExpectedCashLive()">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">ক্যাশ গরমিল থাকলে কারণ (Discrepancy Reason if any):</label>
-                        <textarea name="discrepancy_reason" class="form-control" rows="2" placeholder="যদি সিস্টেমের সাথে ক্যাশের পার্থক্য থাকে"></textarea>
+
+                    <!-- Live Difference Display -->
+                    <div id="reconcile-diff-box" style="display: none; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700;">ক্যাশ গরমিল / সমতা (Cash Difference):</span>
+                            <span id="reconcile-diff-val" style="font-size: 1.15rem; font-weight: 800;">৳ 0.00</span>
+                        </div>
+                        <div id="reconcile-diff-msg" style="font-size: 0.8rem; margin-top: 4px;"></div>
                     </div>
+
+                    <!-- Discrepancy Reason Field -->
+                    <div class="form-group" id="reconcile-reason-group">
+                        <label class="form-label" id="reconcile-reason-label">
+                            ক্যাশ গরমিল থাকলে কারণ (Discrepancy Reason):
+                        </label>
+                        <textarea name="discrepancy_reason" id="reconcile-discrepancy-reason" class="form-control" rows="2" 
+                                  placeholder="পার্থক্য থাকলে সুনির্দিষ্ট কারণ লিখুন (বাধ্যতামূলক)"></textarea>
+                    </div>
+
                     <div class="form-group">
-                        <label class="form-label">সমাপ্তির সাধারণ নোট:</label>
+                        <label class="form-label">সমাপ্তির সাধারণ নোট (ঐচ্ছিক):</label>
                         <input type="text" name="notes" class="form-control" placeholder="যেমন: স্বাভাবিক দিনের সমাপ্তি">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeDayCloseModal()" class="btn btn-secondary">বাতিল</button>
-                    <button type="submit" class="btn btn-warning">✓ দিন সমাপ্ত ও ব্যাকআপ করুন</button>
+                    <button type="submit" id="reconcile-submit-btn" class="btn btn-warning" style="font-weight: 700;">
+                        ✓ দিন সমাপ্ত ও ব্যাকআপ সংরক্ষণ করুন
+                    </button>
                 </div>
             </form>
         </div>
@@ -158,9 +223,101 @@
         }
         function openDayCloseModal() {
             document.getElementById('day-close-modal').style.display = 'flex';
+            updateExpectedCashLive();
         }
         function closeDayCloseModal() {
             document.getElementById('day-close-modal').style.display = 'none';
+        }
+
+        const baseOpening = parseFloat('{{ day_reconciliation.opening_cash|default:"0" }}') || 0;
+        const baseCashRec = parseFloat('{{ day_reconciliation.cash_received|default:"0" }}') || 0;
+        const baseExpenses = parseFloat('{{ day_reconciliation.cash_expenses|default:"0" }}') || 0;
+        const baseRefunds = parseFloat('{{ day_reconciliation.returns_amount|default:"0" }}') || 0;
+
+        function updateExpectedCashLive() {
+            const otherInInput = document.getElementById('reconcile-other-cash');
+            const actualInput = document.getElementById('reconcile-actual-cash');
+            const diffBox = document.getElementById('reconcile-diff-box');
+            const diffVal = document.getElementById('reconcile-diff-val');
+            const diffMsg = document.getElementById('reconcile-diff-msg');
+            const reasonInput = document.getElementById('reconcile-discrepancy-reason');
+            const reasonLabel = document.getElementById('reconcile-reason-label');
+            const expectedDisplay = document.getElementById('reconcile-expected-display');
+
+            const otherIn = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
+            const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
+            if (expectedDisplay) {
+                expectedDisplay.textContent = '৳ ' + expectedCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            if (!actualInput || actualInput.value.trim() === '') {
+                if (diffBox) diffBox.style.display = 'none';
+                return;
+            }
+
+            const actualCash = parseFloat(actualInput.value) || 0;
+            const diff = actualCash - expectedCash;
+            const diffAbs = Math.abs(diff).toFixed(2);
+
+            if (diffBox) diffBox.style.display = 'block';
+
+            if (Math.abs(diff) < 0.005) {
+                diffBox.style.backgroundColor = '#dcfce7';
+                diffBox.style.border = '1.5px solid #86efac';
+                diffBox.style.color = '#166534';
+                diffVal.textContent = '৳ 0.00 (ক্যাশ সমতা সম্পূর্ণ সঠিক)';
+                diffVal.style.color = '#15803d';
+                diffMsg.textContent = 'হাতে থাকা ক্যাশের সাথে সিস্টেমের প্রত্যাশিত ব্যালেন্স মিলে গেছে।';
+                if (reasonInput) {
+                    reasonInput.required = false;
+                    reasonInput.style.borderColor = '';
+                }
+                if (reasonLabel) reasonLabel.innerHTML = 'ক্যাশ গরমিল থাকলে কারণ (Discrepancy Reason):';
+            } else if (diff < 0) {
+                diffBox.style.backgroundColor = '#fee2e2';
+                diffBox.style.border = '1.5px solid #fca5a5';
+                diffBox.style.color = '#991b1b';
+                diffVal.textContent = `− ৳ ${diffAbs} (ক্যাশ ঘাটতি / Shortage)`;
+                diffVal.style.color = '#b91c1c';
+                diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে কম টাকা পাওয়া গেছে। গরমিলের কারণ উল্লেখ করা বাধ্যতামূলক।';
+                if (reasonInput) {
+                    reasonInput.required = true;
+                    reasonInput.style.borderColor = '#ef4444';
+                }
+                if (reasonLabel) reasonLabel.innerHTML = '<span style="color: #b91c1c; font-weight: 700;">★ ক্যাশ ঘাটতির কারণ (বাধ্যতামূলক):</span>';
+            } else {
+                diffBox.style.backgroundColor = '#e0f2fe';
+                diffBox.style.border = '1.5px solid #7dd3fc';
+                diffBox.style.color = '#0369a1';
+                diffVal.textContent = `+ ৳ ${diffAbs} (ক্যাশ বেশি / Surplus)`;
+                diffVal.style.color = '#0284c7';
+                diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে বেশি টাকা রয়েছে। গরমিলের কারণ উল্লেখ করা বাধ্যতামূলক।';
+                if (reasonInput) {
+                    reasonInput.required = true;
+                    reasonInput.style.borderColor = '#0284c7';
+                }
+                if (reasonLabel) reasonLabel.innerHTML = '<span style="color: #0369a1; font-weight: 700;">★ অতিরিক্ত ক্যাশের কারণ (বাধ্যতামূলক):</span>';
+            }
+        }
+
+        function validateDayCloseForm() {
+            const actualInput = document.getElementById('reconcile-actual-cash');
+            const otherInInput = document.getElementById('reconcile-other-cash');
+            const reasonInput = document.getElementById('reconcile-discrepancy-reason');
+
+            const otherIn = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
+            const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
+            const actualCash = parseFloat(actualInput ? actualInput.value : 0) || 0;
+            const diff = actualCash - expectedCash;
+
+            if (Math.abs(diff) >= 0.005) {
+                if (!reasonInput || !reasonInput.value.trim()) {
+                    alert('ক্যাশ গরমিল রয়েছে (পার্থক্য: ৳ ' + diff.toFixed(2) + ')। অনুগ্রহ করে কারণ উল্লেখ করুন।');
+                    if (reasonInput) reasonInput.focus();
+                    return false;
+                }
+            }
+            return true;
         }
     </script>
     {% block extra_scripts %}{% endblock %}

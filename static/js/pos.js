@@ -364,6 +364,36 @@ document.addEventListener('DOMContentLoaded', function () {
         amountPaidInput.addEventListener('input', updatePaymentCalculations);
     }
 
+    // Split Payment Toggle & Sync
+    const splitContainer = document.getElementById('pos-split-payment-container');
+    const splitCashInput = document.getElementById('pos-split-cash-input');
+    const splitDigitalMethodSelect = document.getElementById('pos-split-digital-method');
+    const splitDigitalInput = document.getElementById('pos-split-digital-input');
+
+    function syncSplitPaymentTotal() {
+        if (paymentMethodSelect.value === 'SPLIT') {
+            const cAmt = parseFloat(splitCashInput.value) || 0;
+            const dAmt = parseFloat(splitDigitalInput.value) || 0;
+            amountPaidInput.value = (cAmt + dAmt).toFixed(2);
+            updatePaymentCalculations();
+        }
+    }
+
+    if (paymentMethodSelect) {
+        paymentMethodSelect.addEventListener('change', function () {
+            if (paymentMethodSelect.value === 'SPLIT') {
+                if (splitContainer) splitContainer.style.display = 'block';
+                syncSplitPaymentTotal();
+            } else {
+                if (splitContainer) splitContainer.style.display = 'none';
+                updatePaymentCalculations();
+            }
+        });
+    }
+
+    if (splitCashInput) splitCashInput.addEventListener('input', syncSplitPaymentTotal);
+    if (splitDigitalInput) splitDigitalInput.addEventListener('input', syncSplitPaymentTotal);
+
     // 8. Submit Invoice to Backend
     if (submitInvoiceBtn) {
         submitInvoiceBtn.addEventListener('click', function () {
@@ -396,6 +426,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 customer_name: custName,
                 customer_phone: custPhone,
             };
+
+            if (paymentMethod === 'SPLIT') {
+                const cAmt = parseFloat(splitCashInput.value) || 0;
+                const dMethod = splitDigitalMethodSelect ? splitDigitalMethodSelect.value : 'BKASH';
+                const dAmt = parseFloat(splitDigitalInput.value) || 0;
+                payload.split_payments = [];
+                if (cAmt > 0) payload.split_payments.push({ payment_method: 'CASH', amount: cAmt });
+                if (dAmt > 0) payload.split_payments.push({ payment_method: dMethod, amount: dAmt });
+            }
 
             submitInvoiceBtn.disabled = true;
             submitInvoiceBtn.textContent = 'বিল সংরক্ষণ হচ্ছে...';

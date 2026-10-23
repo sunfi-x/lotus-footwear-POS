@@ -12,9 +12,15 @@ from pos.views import (
 from inventory.views import (
     products_list_view, add_product_view, add_variant_view,
     adjust_stock_view, purchases_list_view, add_purchase_view,
-    csv_migration_view, download_csv_template_view
+    csv_migration_view, download_csv_template_view,
+    create_product_unified_view, get_existing_product_variants_api,
 )
-from expenses.views import expenses_list_view, add_expense_view
+from expenses.views import (
+    expenses_list_view, add_expense_view,
+    salesman_payments_view, add_salesman_view, edit_salesman_view,
+    record_salesman_payment_view, reverse_salesman_payment_view,
+    individual_salesman_history_view
+)
 from reports.views import admin_dashboard_view, historical_search_view, profit_report_view
 from backup_system.views import backup_center_view, trigger_manual_backup_view, restore_backup_view
 
@@ -40,6 +46,8 @@ urlpatterns = [
     # Inventory
     path('inventory/products/', products_list_view, name='products_list'),
     path('inventory/products/add/', add_product_view, name='add_product'),
+    path('inventory/products/create-unified/', create_product_unified_view, name='create_product_unified'),
+    path('inventory/api/product-variants/', get_existing_product_variants_api, name='get_existing_product_variants_api'),
     path('inventory/variants/add/', add_variant_view, name='add_variant'),
     path('inventory/adjust-stock/', adjust_stock_view, name='adjust_stock'),
     path('inventory/purchases/', purchases_list_view, name='purchases_list'),
@@ -47,9 +55,15 @@ urlpatterns = [
     path('inventory/migration/', csv_migration_view, name='csv_migration'),
     path('inventory/migration/template/', download_csv_template_view, name='download_csv_template'),
 
-    # Expenses
+    # Expenses & Salesman Payments
     path('expenses/', expenses_list_view, name='expenses_list'),
     path('expenses/add/', add_expense_view, name='add_expense'),
+    path('salesman-payments/', salesman_payments_view, name='salesman_payments'),
+    path('salesman-payments/add-salesman/', add_salesman_view, name='add_salesman'),
+    path('salesman-payments/edit-salesman/<str:salesman_id>/', edit_salesman_view, name='edit_salesman'),
+    path('salesman-payments/record-payment/', record_salesman_payment_view, name='record_salesman_payment'),
+    path('salesman-payments/reverse-payment/<str:payment_id>/', reverse_salesman_payment_view, name='reverse_salesman_payment'),
+    path('salesman-payments/profile/<str:salesman_id>/', individual_salesman_history_view, name='individual_salesman_history'),
 
     # Reports & Dashboards
     path('admin-dashboard/', admin_dashboard_view, name='admin_dashboard'),
