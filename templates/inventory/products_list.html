@@ -17,121 +17,128 @@
 <!-- 5 KPI Summary Cards -->
 <div class="stats-grid stats-grid-5" style="margin-bottom:1.5rem;">
     <!-- 1. TOTAL PAIRS IN STOCK -->
-    <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
-        <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট স্টকে জুতা (TOTAL PAIRS)</div>
-        <div class="value" style="color: #1e3a8a;">
+    <div class="stat-card primary">
+        <div class="label">মোট স্টকে জুতা (TOTAL PAIRS)</div>
+        <div class="value">
             {{ kpi.total_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">সকল ক্যাটাগরি মিলিয়ে মোট মজুদ</div>
+        <div class="card-desc">সকল ক্যাটাগরি মিলিয়ে মোট মজুদ</div>
     </div>
 
     <!-- 2. GENTS STOCK -->
-    <div class="stat-card primary" style="border-top: 4px solid #0284c7;">
-        <div class="label" style="font-weight: 700; color: #0284c7;">Gents Stock (GENTS PAIRS)</div>
-        <div class="value" style="color: #0284c7;">
+    <div class="stat-card info">
+        <div class="label">Gents Stock (GENTS PAIRS)</div>
+        <div class="value" style="color:var(--info);">
             {{ kpi.gents_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">পুরুষদের জুতার বর্তমান মজুদ</div>
+        <div class="card-desc">পুরুষদের জুতার বর্তমান মজুদ</div>
     </div>
 
     <!-- 3. LADIES STOCK -->
-    <div class="stat-card primary" style="border-top: 4px solid #d946ef;">
-        <div class="label" style="font-weight: 700; color: #a21caf;">Ladies Stock (LADIES PAIRS)</div>
-        <div class="value" style="color: #a21caf;">
+    <div class="stat-card primary">
+        <div class="label">Ladies Stock (LADIES PAIRS)</div>
+        <div class="value" style="color:var(--primary);">
             {{ kpi.ladies_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">মহিলাদের জুতার বর্তমান মজুদ</div>
+        <div class="card-desc">মহিলাদের জুতার বর্তমান মজুদ</div>
     </div>
 
     <!-- 4. KIDS STOCK -->
-    <div class="stat-card primary" style="border-top: 4px solid #f59e0b;">
-        <div class="label" style="font-weight: 700; color: #b45309;">Kids Stock (KIDS PAIRS)</div>
-        <div class="value" style="color: #b45309;">
+    <div class="stat-card warning">
+        <div class="label">Kids Stock (KIDS PAIRS)</div>
+        <div class="value" style="color:var(--warning);">
             {{ kpi.kids_pairs|default:0|intcomma }} <span style="font-size: 0.95rem; font-weight: 500;">জোড়া</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বাচ্চাদের সকল গ্রুপ (A–E) মিলিয়ে মজুদ</div>
+        <div class="card-desc">বাচ্চাদের সকল গ্রুপ (A–E) মিলিয়ে মজুদ</div>
     </div>
 
     <!-- 5. TOTAL INVENTORY COST -->
-    <div class="stat-card success" style="border-top: 4px solid #15803d;">
-        <div class="label" style="font-weight: 700; color: #15803d;">মোট স্টকের ক্রয়মূল্য (INVENTORY VALUE)</div>
-        <div class="value" style="color: #15803d;">
+    <div class="stat-card success">
+        <div class="label">মোট স্টকের ক্রয়মূল্য (INVENTORY VALUE)</div>
+        <div class="value" style="color:var(--success);">
             ৳ {{ kpi.total_inventory_cost|default:0|intcomma }}
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বর্তমান মজুদের ক্রয়মূল্য (WAC অনুযায়ী)</div>
+        <div class="card-desc">বর্তমান মজুদের ক্রয়মূল্য (WAC অনুযায়ী)</div>
     </div>
 </div>
 
 <!-- Search Bar -->
-<div style="background: #ffffff; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 1.25rem;">
-    <form method="GET" style="display: flex; gap: 1rem;">
-        <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="জুতার কোড বা মডেল নাম দিয়ে সার্চ করুন (যেমন: M0001, Oxford, Heel)...">
-        <button type="submit" class="btn btn-primary">অনুসন্ধান</button>
-        <a href="{% url 'products_list' %}" class="btn btn-secondary">সব দেখুন</a>
-    </form>
+<div class="card mb-2">
+    <div class="card-body" style="padding:1rem 1.25rem;">
+        <form method="GET" style="display: flex; gap: 0.75rem; align-items: center;">
+            <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="জুতার কোড বা মডেল নাম দিয়ে সার্চ করুন (যেমন: M0001, Oxford, Heel)...">
+            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">অনুসন্ধান</button>
+            <a href="{% url 'products_list' %}" class="btn btn-secondary" style="white-space:nowrap;">সব দেখুন</a>
+        </form>
+    </div>
 </div>
 
 <!-- Products Table -->
-<div class="table-responsive">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>জুতার কোড</th>
-                <th>মডেল ও বিবরণ</th>
-                <th>সাইজ</th>
-                <th>কালার</th>
-                <th>SKU</th>
-                <th>বর্তমান স্টক</th>
-                <th>গড় ক্রয়মূল্য (WAC)</th>
-                <th>স্টকের ক্রয়মূল্য</th>
-                <th>বিক্রয় দর</th>
-                <th>স্ট্যাটাস</th>
-                <th>অ্যাকশন</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for variant in variants %}
-            <tr>
-                <td><strong>{{ variant.product.code }}</strong></td>
-                <td>{{ variant.product.name }}</td>
-                <td><span class="day-badge day-open">{{ variant.size }}</span></td>
-                <td>{{ variant.colour }}</td>
-                <td><code>{{ variant.sku }}</code></td>
-                <td>
-                    <strong style="font-size: 1.05rem; {% if variant.current_stock <= 0 %}color: #b91c1c;{% elif variant.current_stock <= variant.low_stock_threshold %}color: #b45309;{% else %}color: #15803d;{% endif %}">
-                        {{ variant.current_stock }} জোড়া
-                    </strong>
-                </td>
-                <td>৳ {{ variant.weighted_avg_cost|intcomma }}</td>
-                <td>
-                    <!-- Stock Value = current_stock * weighted_avg_cost -->
-                    ৳ {% widthratio variant.current_stock 1 variant.weighted_avg_cost as val %}{{ val|default:"0"|intcomma }}
-                </td>
-                <td>৳ {{ variant.standard_selling_price|intcomma }}</td>
-                <td>
-                    {% if variant.current_stock <= 0 %}
-                        <span class="day-badge day-closed">স্টক শেষ</span>
-                    {% elif variant.current_stock <= variant.low_stock_threshold %}
-                        <span class="day-badge" style="background: #fef3c7; color: #b45309;">কম স্টক (≤{{ variant.low_stock_threshold }})</span>
-                    {% else %}
-                        <span class="day-badge day-open">পর্যাপ্ত</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <button type="button" onclick="openStockAdjustModal('{{ variant.id }}', '{{ variant.sku }}', '{{ variant.current_stock }}')" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.8rem;">
-                        ⚙️ স্টক সমন্বয়
-                    </button>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                    কোনো জুতার রেকর্ড পাওয়া যায়নি। উপরের "+ নতুন জুতার মডেল যোগ করুন" বাটনে ক্লিক করে নতুন মডেল যোগ করুন অথবা CSV ফাইল থেকে ইমপোর্ট করুন।
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card">
+    <div class="card-header-bar">
+        <span class="card-title">জুতার বিস্তারিত তালিকা</span>
+        <span style="font-size:0.85rem;color:var(--text-muted);">প্রদর্শিত ভ্যারিয়েন্ট: {{ variants|length }} টি</span>
+    </div>
+    <div class="table-responsive" style="border:none;border-radius:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>জুতার কোড</th>
+                    <th>মডেল ও বিবরণ</th>
+                    <th>সাইজ</th>
+                    <th>কালার</th>
+                    <th>SKU</th>
+                    <th>বর্তমান স্টক</th>
+                    <th>গড় ক্রয়মূল্য (WAC)</th>
+                    <th>স্টকের ক্রয়মূল্য</th>
+                    <th>বিক্রয় দর</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for variant in variants %}
+                <tr>
+                    <td><strong>{{ variant.product.code }}</strong></td>
+                    <td>{{ variant.product.name }}</td>
+                    <td><span class="badge badge-neutral">{{ variant.size }}</span></td>
+                    <td>{{ variant.colour }}</td>
+                    <td><code>{{ variant.sku }}</code></td>
+                    <td>
+                        <strong style="font-size: 1rem; {% if variant.current_stock <= 0 %}color: var(--danger);{% elif variant.current_stock <= variant.low_stock_threshold %}color: var(--warning);{% else %}color: var(--success);{% endif %}">
+                            {{ variant.current_stock }} জোড়া
+                        </strong>
+                    </td>
+                    <td>৳ {{ variant.weighted_avg_cost|intcomma }}</td>
+                    <td>
+                        ৳ {% widthratio variant.current_stock 1 variant.weighted_avg_cost as val %}{{ val|default:"0"|intcomma }}
+                    </td>
+                    <td>৳ {{ variant.standard_selling_price|intcomma }}</td>
+                    <td>
+                        {% if variant.current_stock <= 0 %}
+                            <span class="badge badge-danger">স্টক শেষ</span>
+                        {% elif variant.current_stock <= variant.low_stock_threshold %}
+                            <span class="badge badge-warning">কম স্টক (≤{{ variant.low_stock_threshold }})</span>
+                        {% else %}
+                            <span class="badge badge-success">পর্যাপ্ত</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" onclick="openStockAdjustModal('{{ variant.id }}', '{{ variant.sku }}', '{{ variant.current_stock }}')" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.8rem;">
+                            ⚙️ সমন্বয়
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        কোনো জুতার রেকর্ড পাওয়া যায়নি। উপরের "+ নতুন জুতার মডেল যোগ করুন" বাটনে ক্লিক করে নতুন মডেল যোগ করুন অথবা CSV ফাইল থেকে ইমপোর্ট করুন।
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Stock Adjustment Modal -->
@@ -141,12 +148,12 @@
             {% csrf_token %}
             <input type="hidden" name="variant_id" id="adj-variant-id">
             <div class="modal-header">
-                <h3 style="color: #1e3a8a;">⚙️ জুতার স্টক সমন্বয় (Stock Adjustment)</h3>
+                <h3 style="color: var(--primary);">⚙️ জুতার স্টক সমন্বয় (Stock Adjustment)</h3>
                 <button type="button" onclick="closeStockAdjustModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body">
                 <p>ভ্যারিয়েন্ট: <strong id="adj-sku"></strong></p>
-                <p>সিস্টেমের বর্তমান রেকর্ড: <strong id="adj-old-stock" style="color: #1e3a8a;"></strong> জোড়া</p>
+                <p>সিস্টেমের বর্তমান রেকর্ড: <strong id="adj-old-stock" style="color: var(--primary);"></strong> জোড়া</p>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="form-label">দোকানে গুনে পাওয়া প্রকৃত নতুন স্টক (New Physical Stock):</label>
                     <input type="number" name="new_stock" id="adj-new-stock" class="form-control" required min="0">
@@ -173,7 +180,7 @@
         <!-- Modal Header -->
         <div style="background: #f8fafc; border-bottom: 1px solid var(--border-light); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-top-left-radius: 12px; border-top-right-radius: 12px;">
             <div>
-                <h3 style="color: #1e3a8a; margin: 0; font-size: 1.2rem; font-weight: 700;">+ জুতার মডেল ও ভ্যারিয়েন্ট যোগ করুন</h3>
+                <h3 style="color: var(--primary); margin: 0; font-size: 1.2rem; font-weight: 700;">+ জুতার মডেল ও ভ্যারিয়েন্ট যোগ করুন</h3>
                 <p style="margin: 3px 0 0; font-size: 0.82rem; color: var(--text-muted);">
                     নতুন মডেল তৈরি করুন অথবা বিদ্যমান কোড দিয়ে আগের মডেলে নতুন সাইজ/কালার যুক্ত করুন
                 </p>
@@ -197,7 +204,7 @@
                 <!-- Section 1: Product Information -->
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.15rem 1.25rem; margin-bottom: 1.25rem;">
                     <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="background: #1e3a8a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">1</span>
+                        <span style="background: var(--primary); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">1</span>
                         জুতার মডেল তথ্য (Product Information)
                     </div>
 
@@ -251,7 +258,7 @@
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.15rem 1.25rem; margin-bottom: 1.25rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="background: #1e3a8a; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">2</span>
+                            <span style="background: var(--primary); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">2</span>
                             সাইজ ও কালার ভ্যারিয়েন্ট (Variants)
                         </div>
                         <button type="button" onclick="addVariantCard()" class="btn btn-secondary btn-sm" style="font-weight: 600; font-size: 0.82rem; padding: 6px 12px;">
@@ -279,7 +286,7 @@
                 <!-- Section 3: Live Summary & Error Display -->
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
                     <div style="font-size: 0.9rem; color: #334155; font-weight: 600; display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <span><strong id="live-total-variants" style="color: #1e3a8a;">1</strong> variant</span>
+                        <span><strong id="live-total-variants" style="color: var(--primary);">1</strong> variant</span>
                         <span>|</span>
                         <span><strong id="live-total-pairs" style="color: #0284c7;">0</strong> pairs</span>
                         <span>|</span>
@@ -315,7 +322,7 @@
     <div style="background: #ffffff; border-radius: 12px; max-width: 480px; width: 92%; padding: 1.25rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">
-            <h4 style="margin: 0; font-size: 1.05rem; color: #1e3a8a; font-weight: 700;">
+            <h4 style="margin: 0; font-size: 1.05rem; color: var(--primary); font-weight: 700;">
                 📏 সাইজ নির্বাচন করুন (<span id="picker-cat-title">Gents</span>)
             </h4>
             <button type="button" onclick="closeSizePicker()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
@@ -431,7 +438,7 @@
     }
     .btn-color-pill:hover {
         background: #e2e8f0;
-        color: #0f172a;
+        color: var(--text-main);
     }
 
     /* Variant Card Styles */
@@ -620,7 +627,7 @@
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <strong style="color: #1e3a8a; font-size: 0.88rem;" class="variant-card-title">Variant ${document.querySelectorAll('.variant-card').length + 1}</strong>
+                    <strong style="color: var(--primary); font-size: 0.88rem;" class="variant-card-title">Variant ${document.querySelectorAll('.variant-card').length + 1}</strong>
                     <span id="v-sku-preview-${id}" style="font-family: monospace; font-size: 0.72rem; color: #64748b; background: #e2e8f0; padding: 1px 6px; border-radius: 4px;">SKU: AUTO</span>
                 </div>
                 <button type="button" onclick="removeVariantCard(${id})" style="background: none; border: none; color: #ef4444; font-size: 1.15rem; cursor: pointer; padding: 0 4px;" title="রিমুভ করুন">&times;</button>

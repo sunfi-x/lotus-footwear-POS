@@ -56,8 +56,10 @@ body {
 
 /* ── App Shell: Sidebar + Main Pane ─────────────────────────────────────── */
 .app-shell {
-  display: flex;
   min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  width: 100%;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
@@ -268,6 +270,8 @@ body.sidebar-collapsed .nav-link {
 
 body.sidebar-collapsed .main-pane {
   margin-left: var(--sidebar-w-col);
+  width: calc(100% - var(--sidebar-w-col));
+  max-width: calc(100% - var(--sidebar-w-col));
 }
 
 body.sidebar-collapsed .app-header {
@@ -391,15 +395,22 @@ body.sidebar-collapsed .nav-link:hover::after {
   margin-left: var(--sidebar-w);
   padding-top: var(--header-h);
   min-height: 100vh;
-  flex: 1;
+  width: calc(100% - var(--sidebar-w));
+  max-width: calc(100% - var(--sidebar-w));
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  transition: margin-left 0.25s ease;
+  transition: margin-left 0.25s ease, width 0.25s ease, max-width 0.25s ease;
+  box-sizing: border-box;
 }
 
 .main-content {
   flex: 1;
   padding: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* ── Page Header ─────────────────────────────────────────────────────────── */
@@ -456,10 +467,17 @@ body.sidebar-collapsed .nav-link:hover::after {
   margin-bottom: 1.25rem;
 }
 
-.stats-grid-3 { grid-template-columns: repeat(3, 1fr); }
-.stats-grid-4 { grid-template-columns: repeat(4, 1fr); }
-.stats-grid-5 { grid-template-columns: repeat(5, 1fr); }
-.stats-grid-6 { grid-template-columns: repeat(3, 1fr); } /* 3×2 */
+.stats-grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.stats-grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.stats-grid-5 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.stats-grid-6 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+@media (min-width: 1200px) {
+  .stats-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stats-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stats-grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .stats-grid-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 .stat-card {
   background: var(--surface);
@@ -1029,3 +1047,23 @@ kbd {
 .receipt-divider        { border-bottom: 1px dashed #000; margin: 6px 0; }
 .receipt-double-divider { border-bottom: 1px double #000; margin: 6px 0; }
 .receipt-flex           { display: flex; justify-content: space-between; margin: 2px 0; }
+
+
+/* Day badge compatibility */
+.day-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.day-badge.day-open   { background: var(--success-bg); color: var(--success); }
+.day-badge.day-closed { background: var(--danger-bg);  color: var(--danger); }
+
+/* Color aliases for stat-card */
+.stat-card.stat-card-purple::before { background: var(--primary); }
+.stat-card.stat-card-green::before  { background: var(--success); }
+.stat-card.stat-card-blue::before   { background: var(--info); }
+.stat-card.stat-card-amber::before  { background: var(--warning); }
+.stat-card.stat-card-red::before    { background: var(--danger); }

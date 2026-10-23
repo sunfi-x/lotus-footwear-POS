@@ -16,49 +16,49 @@
 </div>
 
 <!-- 4 Dashboard KPI Summaries -->
-<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; gap: 1rem;">
+<div class="stats-grid stats-grid-4" style="margin-bottom: 1.5rem;">
     <!-- 1. Total Active Salesmen -->
-    <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
-        <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট সক্রিয় সেলসম্যান (Active Salesmen)</div>
-        <div class="value" style="color: #1e3a8a;">
+    <div class="stat-card primary">
+        <div class="label">মোট সক্রিয় সেলসম্যান (Active Salesmen)</div>
+        <div class="value">
             {{ total_active_salesmen|default:0 }} <span style="font-size: 0.95rem; font-weight: 500;">জন</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">বর্তমান প্রতিষ্ঠানে কর্মরত বিক্রয়কর্মী</div>
+        <div class="card-desc">বর্তমান প্রতিষ্ঠানে কর্মরত বিক্রয়কর্মী</div>
     </div>
 
     <!-- 2. Payments Made Today -->
-    <div class="stat-card primary" style="border-top: 4px solid #0284c7;">
-        <div class="label" style="font-weight: 700; color: #0284c7;">আজকের মোট পেমেন্ট (Payments Made Today)</div>
-        <div class="value" style="color: #0284c7;">
+    <div class="stat-card info">
+        <div class="label">আজকের মোট পেমেন্ট (Payments Made Today)</div>
+        <div class="value" style="color:var(--info);">
             ৳ {{ payments_today_amount|default:0|intcomma }}
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">আজকের তারিখে প্রদত্ত বেতন, অগ্রিম ও বোনাস</div>
+        <div class="card-desc">আজকের তারিখে প্রদত্ত বেতন, অগ্রিম ও বোনাস</div>
     </div>
 
     <!-- 3. Payments Made This Month -->
-    <div class="stat-card primary" style="border-top: 4px solid #d946ef;">
-        <div class="label" style="font-weight: 700; color: #a21caf;">চলতি মাসের মোট পেমেন্ট (This Month)</div>
-        <div class="value" style="color: #a21caf;">
+    <div class="stat-card primary">
+        <div class="label">চলতি মাসের মোট পেমেন্ট (This Month)</div>
+        <div class="value" style="color:var(--primary);">
             ৳ {{ payments_this_month_amount|default:0|intcomma }}
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">চলতি ক্যালেন্ডার মাসে পরিশোধিত মোট টাকা</div>
+        <div class="card-desc">চলতি ক্যালেন্ডার মাসে পরিশোধিত মোট টাকা</div>
     </div>
 
     <!-- 4. Total Payments in Selected Date Range -->
-    <div class="stat-card success" style="border-top: 4px solid #15803d;">
-        <div class="label" style="font-weight: 700; color: #15803d;">নির্বাচিত সময়ের মোট পেমেন্ট (Selected Range)</div>
-        <div class="value" style="color: #15803d;">
+    <div class="stat-card success">
+        <div class="label">নির্বাচিত সময়ের মোট পেমেন্ট (Selected Range)</div>
+        <div class="value" style="color:var(--success);">
             ৳ {{ filtered_total_amount|default:0|intcomma }}
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">ফিল্টারে প্রদর্শিত {{ filtered_completed_count }} টি সম্পন্ন পেমেন্টের মোট যোগফল</div>
+        <div class="card-desc">ফিল্টারে প্রদর্শিত {{ filtered_completed_count }} টি সম্পন্ন পেমেন্টের মোট যোগফল</div>
     </div>
 </div>
 
 <!-- ============================================================== -->
 <!-- AREA 1: SALESMAN LIST CARD                                     -->
 <!-- ============================================================== -->
-<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.65rem;">
+<div class="card mb-2">
+    <div class="card-header-bar">
         <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
             <span>👥</span> সেলসম্যানদের তালিকা (Salesman Directory)
         </h3>
@@ -70,13 +70,13 @@
         <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.75rem 1rem; min-width: 220px; flex: 1 1 calc(25% - 0.75rem); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                    <a href="{% url 'individual_salesman_history' sm.salesman_id %}" style="font-weight: 700; color: #1e3a8a; font-size: 0.98rem; text-decoration: none;">
+                    <a href="{% url 'individual_salesman_history' sm.salesman_id %}" style="font-weight: 700; color: var(--primary); font-size: 0.98rem; text-decoration: none;">
                         {{ sm.name }}
                     </a>
                     {% if sm.is_active %}
-                        <span class="day-badge day-open" style="font-size: 0.7rem; padding: 1px 6px;">সক্রিয়</span>
+                        <span class="badge badge-success" style="font-size: 0.7rem; padding: 1px 6px;">সক্রিয়</span>
                     {% else %}
-                        <span class="day-badge day-closed" style="font-size: 0.7rem; padding: 1px 6px;">নিষ্ক্রিয়</span>
+                        <span class="badge badge-danger" style="font-size: 0.7rem; padding: 1px 6px;">নিষ্ক্রিয়</span>
                     {% endif %}
                 </div>
                 <div style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">
@@ -108,8 +108,8 @@
 <!-- ============================================================== -->
 <!-- AREA 2: PAYMENT HISTORY TABLE & SEARCH FILTERS                -->
 <!-- ============================================================== -->
-<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+<div class="card">
+    <div class="card-header-bar">
         <h3 style="margin: 0; font-size: 1.15rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
             <span>💳</span> সকল পেমেন্ট হিস্ট্রি (Payment History)
         </h3>
@@ -121,7 +121,7 @@
     </div>
 
     <!-- Search & Filters Bar -->
-    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+    <div style="background: var(--surface-alt); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); margin: 1rem 1.25rem;">
         <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 80px; gap: 0.65rem; align-items: end;">
             <div>
                 <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">সেলসম্যান:</label>
@@ -199,9 +199,9 @@
             </thead>
             <tbody>
                 {% for p in payments %}
-                <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: #991b1b; text-decoration: line-through;{% endif %}">
+                <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: var(--danger); text-decoration: line-through;{% endif %}">
                     <td>
-                        <strong style="font-family: monospace; color: #1e3a8a;">{{ p.payment_id }}</strong>
+                        <strong style="font-family: monospace; color: var(--primary);">{{ p.payment_id }}</strong>
                     </td>
                     <td>{{ p.payment_date|date:"d M Y" }}</td>
                     <td>
@@ -214,7 +214,7 @@
                         <span class="day-badge" style="background: #f1f5f9; color: #334155;">{{ p.get_payment_type_display }}</span>
                     </td>
                     <td>
-                        <strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: #991b1b;{% else %}color: #15803d;{% endif %}">
+                        <strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: var(--danger);{% else %}color: var(--success);{% endif %}">
                             ৳ {{ p.amount|intcomma }}
                         </strong>
                     </td>
@@ -233,9 +233,9 @@
                     <td>{{ p.period_covered|default:"—" }}</td>
                     <td>
                         {% if p.status == 'COMPLETED' %}
-                            <span class="day-badge day-open" style="font-size: 0.72rem;">সম্পন্ন (OK)</span>
+                            <span class="badge badge-success" style="font-size: 0.72rem;">সম্পন্ন (OK)</span>
                         {% else %}
-                            <span class="day-badge day-closed" style="font-size: 0.72rem;">বাতিল/রিভার্সড</span>
+                            <span class="badge badge-danger" style="font-size: 0.72rem;">বাতিল/রিভার্সড</span>
                         {% endif %}
                     </td>
                     <td style="text-decoration: none;">
