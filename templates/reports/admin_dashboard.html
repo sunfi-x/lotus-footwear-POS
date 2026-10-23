@@ -1,123 +1,137 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-{% block title %}এডমিন ও মালিক ড্যাশবোর্ড - Lotus Footwear{% endblock %}
+{% block title %}এডমিন ড্যাশবোর্ড — Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+<!-- Page Header -->
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.6rem; color: #1e293b;">মালিক ও এডমিন ড্যাশবোর্ড (Admin Financial & Stock Overview)</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-            ব্যবসায়িক সপ্তাহ: <strong>শুক্রবার থেকে বুধবার</strong> (বৃহস্পতিবার সাপ্তাহিক বন্ধ) | 
-            আজকের তারিখ: <strong>{% now "d F Y" %}</strong>
+        <h1 class="page-title">মালিক ও এডমিন ড্যাশবোর্ড</h1>
+        <p class="page-subtitle">
+            ব্যবসায়িক সপ্তাহ: <strong>শুক্রবার থেকে বুধবার</strong> (বৃহস্পতিবার বন্ধ) &nbsp;|&nbsp;
+            আজ: <strong>{% now "d F Y" %}</strong>
         </p>
     </div>
-    <div style="display: flex; gap: 0.5rem;">
-        <a href="{% url 'csv_migration' %}" class="btn btn-secondary btn-sm">📥 CSV স্টক মাইগ্রেশন</a>
-        <a href="{% url 'backup_center' %}" class="btn btn-primary btn-sm">💾 ব্যাকআপ কন্ট্রোল</a>
+    <div class="page-actions">
+        <a href="{% url 'csv_migration' %}" class="btn btn-secondary btn-sm">📥 CSV ইমপোর্ট</a>
+        <a href="{% url 'backup_center' %}" class="btn btn-primary btn-sm">💾 ব্যাকআপ</a>
     </div>
 </div>
 
-<!-- Period Tabs Navigation -->
-<div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem;">
-    <a href="?period=daily" class="btn btn-sm {% if period == 'daily' %}btn-primary{% else %}btn-secondary{% endif %}">📅 আজকের হিসাব (Today)</a>
-    <a href="?period=weekly" class="btn btn-sm {% if period == 'weekly' %}btn-primary{% else %}btn-secondary{% endif %}">📆 চলতি সপ্তাহ (Fri-Wed Week)</a>
-    <a href="?period=monthly" class="btn btn-sm {% if period == 'monthly' %}btn-primary{% else %}btn-secondary{% endif %}">🗓️ চলতি মাস (Calendar Month)</a>
+<!-- Period Tabs -->
+<div class="period-tabs">
+    <a href="?period=daily"   class="period-tab {% if period == 'daily'   %}active{% endif %}">📅 আজকের হিসাব</a>
+    <a href="?period=weekly"  class="period-tab {% if period == 'weekly'  %}active{% endif %}">📆 চলতি সপ্তাহ</a>
+    <a href="?period=monthly" class="period-tab {% if period == 'monthly' %}active{% endif %}">🗓️ চলতি মাস</a>
 </div>
 
-<!-- Core Financial Health: Sales & Profit Matrix -->
-<div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <h3 style="font-size: 1.2rem; color: #1e3a8a; margin-bottom: 1rem; display: flex; justify-content: space-between;">
-        <span>আর্থিক লাভ-ক্ষতি ও পারফরম্যান্স (Financial Profitability)</span>
-        <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">
-            সময়কাল: {{ financial.start_date|date:"d M Y" }} হতে {{ financial.end_date|date:"d M Y" }}
+<!-- Financial P&L Section -->
+<div class="card mb-3">
+    <div class="card-header-bar">
+        <span class="card-title">আর্থিক লাভ-ক্ষতি ও পারফরম্যান্স</span>
+        <span style="font-size:0.82rem;color:var(--text-muted);">
+            {{ financial.start_date|date:"d M Y" }} — {{ financial.end_date|date:"d M Y" }}
         </span>
-    </h3>
-
-    <div class="stats-grid">
-        <div class="stat-card primary">
-            <div class="label">মোট চূড়ান্ত বিক্রয় (Net Sales)</div>
-            <div class="value" style="color: #1e3a8a;">৳ {{ financial.net_sales|intcomma }}</div>
-            <small style="color: var(--text-muted);">বিক্রীত জুতা: <strong>{{ financial.pairs_sold }} জোড়া</strong> ({{ financial.invoices_count }} ইনভয়েস)</small>
-        </div>
-
-        <div class="stat-card warning">
-            <div class="label">পণ্য ক্রয়মূল্য খরচ (COGS)</div>
-            <div class="value" style="color: #b45309;">৳ {{ financial.cogs|intcomma }}</div>
-            <small style="color: var(--text-muted);">Weighted Average Cost ভিত্তিতে</small>
-        </div>
-
-        <div class="stat-card success">
-            <div class="label">মোট মোট লাভ (Gross Profit)</div>
-            <div class="value" style="color: #15803d;">৳ {{ financial.gross_profit|intcomma }}</div>
-            <small style="color: #15803d; font-weight: bold;">গ্রস প্রফিট মার্জিন: {{ financial.gross_margin_pct }}%</small>
-        </div>
-
-        <div class="stat-card danger">
-            <div class="label">দোকানের পরিচালন ব্যয় (Expenses)</div>
-            <div class="value" style="color: #b91c1c;">৳ {{ financial.operating_expenses|intcomma }}</div>
-            <small style="color: var(--text-muted);">ভাড়া, বেতন, বিদ্যুৎ ও অন্যান্য</small>
-        </div>
     </div>
-
-    <!-- Net Bottomline Profit Highlight -->
-    <div style="background: #f0fdf4; border: 2px solid #86efac; border-radius: 8px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-        <div>
-            <div style="font-size: 0.9rem; font-weight: bold; color: #166534; text-transform: uppercase;">প্রকৃত নিট লাভ (Net Profit After All Expenses)</div>
-            <div style="font-size: 2.2rem; font-weight: 800; color: #15803d;">৳ {{ financial.net_profit|intcomma }}</div>
+    <div class="card-body">
+        <div class="stats-grid stats-grid-4" style="margin-bottom:1rem;">
+            <div class="stat-card primary">
+                <div class="label">মোট চূড়ান্ত বিক্রয় (Net Sales)</div>
+                <div class="value">৳ {{ financial.net_sales|intcomma }}</div>
+                <div class="card-desc">{{ financial.pairs_sold }} জোড়া &nbsp;|&nbsp; {{ financial.invoices_count }} ইনভয়েস</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="label">পণ্য ক্রয়মূল্য খরচ (COGS)</div>
+                <div class="value">৳ {{ financial.cogs|intcomma }}</div>
+                <div class="card-desc">Weighted Average Cost ভিত্তিতে</div>
+            </div>
+            <div class="stat-card success">
+                <div class="label">মোট লাভ (Gross Profit)</div>
+                <div class="value">৳ {{ financial.gross_profit|intcomma }}</div>
+                <div class="card-desc" style="color:var(--success);font-weight:700;">মার্জিন: {{ financial.gross_margin_pct }}%</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="label">পরিচালন ব্যয় (Expenses)</div>
+                <div class="value">৳ {{ financial.operating_expenses|intcomma }}</div>
+                <div class="card-desc">ভাড়া, বেতন, বিদ্যুৎ ও অন্যান্য</div>
+            </div>
         </div>
-        <div style="text-align: right;">
-            <div style="font-size: 0.9rem; color: #166534;">নিট প্রফিট মার্জিন:</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: #15803d;">{{ financial.net_margin_pct }}%</div>
+
+        <!-- Net Profit Highlight -->
+        <div class="profit-highlight {% if financial.net_profit < 0 %}loss{% endif %}">
+            <div>
+                <div style="font-size:0.82rem;font-weight:700;color:{% if financial.net_profit >= 0 %}var(--success){% else %}var(--danger){% endif %};text-transform:uppercase;letter-spacing:0.05em;">
+                    প্রকৃত নিট লাভ (Net Profit After All Expenses)
+                </div>
+                <div class="taka-lg" style="color:{% if financial.net_profit >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                    ৳ {{ financial.net_profit|intcomma }}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:0.85rem;color:var(--text-muted);">নিট প্রফিট মার্জিন</div>
+                <div style="font-size:1.6rem;font-weight:800;color:{% if financial.net_profit >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                    {{ financial.net_margin_pct }}%
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Stock & Inventory Health Overview -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-    <!-- Stock Valuation Card -->
-    <div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h3 style="font-size: 1.15rem; color: #1e293b; margin-bottom: 1rem;">দোকানের বর্তমান মজুদ (Inventory Valuation)</h3>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);">
-            <span style="color: var(--text-muted);">মোট জুতার মডেল সংখ্যা:</span>
-            <strong>{{ total_models_count }} টি</strong>
+<!-- Stock Valuation + Alerts -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+
+    <!-- Stock Valuation -->
+    <div class="card">
+        <div class="card-header-bar">
+            <span class="card-title">দোকানের বর্তমান মজুদ (Inventory Valuation)</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);">
-            <span style="color: var(--text-muted);">মোট সাইজ/কালার ভ্যারিয়েন্ট:</span>
-            <strong>{{ total_variants_count }} টি</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);">
-            <span style="color: var(--text-muted);">মোট জুতার স্টক (Pairs in Stock):</span>
-            <strong style="color: #1e3a8a; font-size: 1.2rem;">{{ total_stock_pairs|intcomma }} জোড়া</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #15803d;">
-            <span>মোট ইনভেন্টরি ক্রয়মূল্য (Valuation):</span>
-            <strong>৳ {{ total_stock_valuation|intcomma }}</strong>
+        <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span class="text-muted">মোট জুতার মডেল:</span>
+                <strong>{{ total_models_count }} টি</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span class="text-muted">মোট সাইজ/কালার ভ্যারিয়েন্ট:</span>
+                <strong>{{ total_variants_count }} টি</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span class="text-muted">মোট স্টক (Pairs in Stock):</span>
+                <strong style="color:var(--primary);font-size:1.2rem;">{{ total_stock_pairs|intcomma }} জোড়া</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+                <span class="text-muted">মোট ইনভেন্টরি মূল্য:</span>
+                <strong style="color:var(--success);font-size:1.1rem;">৳ {{ total_stock_valuation|intcomma }}</strong>
+            </div>
         </div>
     </div>
 
-    <!-- Stock Alerts Card -->
-    <div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h3 style="font-size: 1.15rem; color: #b91c1c; margin-bottom: 1rem;">স্টক সতর্কতা (Stock Alerts)</h3>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);">
-            <span>কম স্টকের ভ্যারিয়েন্ট ({{ low_threshold }} জোড়ার নিচে):</span>
-            <span class="day-badge day-closed">{{ low_stock_variants.count }} টি</span>
+    <!-- Stock Alerts -->
+    <div class="card">
+        <div class="card-header-bar">
+            <span class="card-title" style="color:var(--danger);">স্টক সতর্কতা (Stock Alerts)</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-            <span>স্টক শেষ হয়ে যাওয়া ভ্যারিয়েন্ট (০ জোড়া):</span>
-            <span class="day-badge day-closed">{{ out_of_stock_count }} টি</span>
+        <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span>কম স্টক ({{ low_threshold }} জোড়ার নিচে):</span>
+                <span class="badge badge-danger">{{ low_stock_variants.count }} টি</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+                <span>স্টক শেষ (০ জোড়া):</span>
+                <span class="badge badge-danger">{{ out_of_stock_count }} টি</span>
+            </div>
+            {% if low_stock_variants %}
+            <div style="margin-top:0.75rem;max-height:140px;overflow-y:auto;">
+                <div class="section-label">জরুরি রি-অর্ডার তালিকা:</div>
+                <ul style="margin-left:1.2rem;margin-top:0.25rem;color:var(--danger);font-size:0.82rem;line-height:1.8;">
+                    {% for v in low_stock_variants|slice:":6" %}
+                    <li>{{ v.product.code }} ({{ v.product.name }}) — Size {{ v.size }}, {{ v.colour }}: <strong>{{ v.current_stock }} জোড়া</strong></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
-
-        {% if low_stock_variants %}
-        <div style="margin-top: 1rem; max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
-            <strong>জরুরি রি-অর্ডারের তালিকা:</strong>
-            <ul style="margin-left: 1.2rem; margin-top: 0.35rem; color: #b91c1c;">
-                {% for v in low_stock_variants|slice:":6" %}
-                    <li>{{ v.product.code }} ({{ v.product.name }}) - Size {{ v.size }}, {{ v.colour }}: <strong>মাত্র {{ v.current_stock }} জোড়া</strong></li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
     </div>
+
 </div>
 {% endblock %}

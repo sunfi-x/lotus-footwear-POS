@@ -1,14 +1,30 @@
-{% extends 'base.html' %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লগইন — Lotus Footwear POS</title>
+    <link rel="stylesheet" href="/static/css/lotus.css">
+</head>
+<body>
+<div class="login-shell">
 
-{% block title %}লগইন - Lotus Footwear POS{% endblock %}
+    {% if messages %}
+    <div style="position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:999;min-width:320px;">
+        {% for message in messages %}
+            <div class="alert-box alert-{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-{% block content %}
-<div style="max-width: 440px; margin: 3rem auto;">
-    <div style="background: #ffffff; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-light); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">👞</div>
-            <h2 style="color: var(--primary);">{{ shop_settings.shop_name }}</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">অফলাইন পয়েন্ট অফ সেল ও ইনভেন্টরি সিস্টেম</p>
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-mark">🪷</div>
+            <h2>{{ shop_settings.shop_name }}</h2>
+            <p>অফলাইন পয়েন্ট অফ সেল ও ইনভেন্টরি সিস্টেম</p>
         </div>
 
         <form method="POST" action="{% url 'login' %}">
@@ -18,24 +34,25 @@
                 <input type="text" name="username" class="form-control" placeholder="admin অথবা staff" autofocus required>
             </div>
             <div class="form-group">
-                <label class="form-label">পাসওয়ার্ড (Password):</label>
+                <label class="form-label">পাসওয়ার্ড (Password):</label>
                 <input type="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
-
-            <div style="margin-top: 1.5rem;">
-                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+            <div style="margin-top:1.5rem;">
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
                     লগইন করুন →
                 </button>
             </div>
         </form>
 
-        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 0.85rem; color: var(--text-muted);">
-            <strong>ডিফল্ট অ্যাকাউন্ট তথ্য (লোকাল ব্যবহার):</strong>
-            <ul style="margin-left: 1.2rem; margin-top: 0.35rem; line-height: 1.5;">
-                <li><strong>এডমিন (Admin/Owner):</strong> ইউজার: <code>admin</code> | পাসওয়ার্ড: <code>admin123</code></li>
-                <li><strong>স্টাফ (Sales Staff):</strong> ইউজার: <code>staff</code> | পাসওয়ার্ড: <code>staff123</code></li>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.82rem;color:var(--text-muted);">
+            <strong>ডিফল্ট অ্যাকাউন্ট (লোকাল ব্যবহার):</strong>
+            <ul style="margin-left:1.2rem;margin-top:0.35rem;line-height:1.7;">
+                <li><strong>এডমিন:</strong> ইউজার: <code>admin</code> | পাসওয়ার্ড: <code>admin123</code></li>
+                <li><strong>স্টাফ:</strong> ইউজার: <code>staff</code> | পাসওয়ার্ড: <code>staff123</code></li>
             </ul>
         </div>
     </div>
+
 </div>
-{% endblock %}
+</body>
+</html>

@@ -1,54 +1,59 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-{% block title %}ব্যাকআপ ও ডাটা সুরক্ষা - Lotus Footwear{% endblock %}
+{% block title %}ব্যাকআপ ও রিস্টোর সেন্টার — Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.5rem; color: #1e293b;">ডাটাবেজ ব্যাকআপ ও রিস্টোর সেন্টার (Backup & Restore Center)</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-            ব্যবসায়ের অতি গুরুত্বপূর্ণ হিসাব ও ইনভেন্টরি সুরক্ষিত রাখতে নিয়মিত ব্যাকআপ সংরক্ষণ করুন।
-        </p>
+        <h1 class="page-title">ডাটাবেজ ব্যাকআপ ও রিস্টোর সেন্টার</h1>
+        <p class="page-subtitle">নিয়মিত ব্যাকআপ রেখে ব্যবসার হিসাব ও ইনভেন্টরি সুরক্ষিত রাখুন।</p>
     </div>
-    <div>
-        <form method="POST" action="{% url 'trigger_manual_backup' %}" style="display: inline;">
+    <div class="page-actions">
+        <form method="POST" action="{% url 'trigger_manual_backup' %}" style="display:inline;">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700;">
-                💾 এখনই ব্যাকআপ নিন (Backup Now)
+            <button type="submit" class="btn btn-primary" style="font-weight:700;">
+                💾 এখনই ব্যাকআপ নিন
             </button>
         </form>
     </div>
 </div>
 
-<!-- Storage and Destination Info Card -->
-<div style="background: #ffffff; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-light); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <h3 style="font-size: 1.15rem; color: #1e3a8a; margin-bottom: 0.75rem;">ব্যাকআপ লোকেশন ও সুরক্ষা স্ট্যাটাস</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
-        <div>
-            <strong>লোকাল ব্যাকআপ ফোল্ডার:</strong> <code>{{ backup_dir }}</code><br>
-            <small style="color: var(--text-muted);">কম্পিউটারের লোকাল স্টোরেজে স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়।</small>
-        </div>
-        <div>
-            <strong>এক্সটারনাল / ইউএসবি ড্রাইভ মিররিং:</strong> 
-            <code>{{ shop_settings.external_backup_directory|default:"কনফিগার করা হয়নি" }}</code><br>
-            <small style="color: var(--text-muted);">পেনড্রাইভ বা এক্সটারনাল হার্ডডিস্কে মিরর ব্যাকআপের জন্য সেটিংস থেকে ফোল্ডার সেট করুন।</small>
+<!-- Storage Info Card -->
+<div class="card mb-3">
+    <div class="card-header-bar">
+        <span class="card-title">ব্যাকআপ লোকেশন ও সুরক্ষা স্ট্যাটাস</span>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.9rem;">
+            <div>
+                <div class="section-label">লোকাল ব্যাকআপ ফোল্ডার</div>
+                <code style="background:var(--bg);padding:4px 8px;border-radius:4px;font-size:0.82rem;">{{ backup_dir }}</code>
+                <p class="text-muted" style="font-size:0.8rem;margin-top:4px;">কম্পিউটারের লোকাল স্টোরেজে স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়।</p>
+            </div>
+            <div>
+                <div class="section-label">এক্সটারনাল / USB মিররিং</div>
+                <code style="background:var(--bg);padding:4px 8px;border-radius:4px;font-size:0.82rem;">{{ shop_settings.external_backup_directory|default:"কনফিগার করা হয়নি" }}</code>
+                <p class="text-muted" style="font-size:0.8rem;margin-top:4px;">সেটিংস থেকে পেনড্রাইভ ফোল্ডার সেট করুন।</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Backup History Table -->
-<div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <h3 style="font-size: 1.15rem; color: #1e293b; margin-bottom: 1rem;">পূর্ববর্তী সংরক্ষিত ব্যাকআপসমূহ (Backup Archives)</h3>
-    <div class="table-responsive">
+<!-- Backup History -->
+<div class="card">
+    <div class="card-header-bar">
+        <span class="card-title">পূর্ববর্তী ব্যাকআপ আর্কাইভ</span>
+    </div>
+    <div class="table-responsive" style="border:none;border-radius:0;">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>তারিখ ও সময়</th>
                     <th>ব্যাকআপ ধরন</th>
                     <th>ফাইলের নাম</th>
-                    <th>ফাইলের সাইজ</th>
-                    <th>ইন্টিগ্রিটি যাচাই (Integrity)</th>
+                    <th class="num">সাইজ</th>
+                    <th>ইন্টিগ্রিটি</th>
                     <th>স্ট্যাটাস</th>
                     <th>অ্যাকশন</th>
                 </tr>
@@ -56,42 +61,41 @@
             <tbody>
                 {% for b in backups %}
                 <tr>
-                    <td>{{ b.timestamp|date:"d M Y, h:i A" }}</td>
+                    <td style="font-size:0.82rem;color:var(--text-muted);">{{ b.timestamp|date:"d M Y, h:i A" }}</td>
                     <td>
-                        <span class="badge-role {% if b.backup_type == 'DAY_END' %}role-admin{% else %}role-staff{% endif %}">
+                        <span class="badge {% if b.backup_type == 'DAY_END' %}badge-warning{% else %}badge-primary{% endif %}">
                             {{ b.get_backup_type_display }}
                         </span>
                     </td>
-                    <td><code>{{ b.filename }}</code></td>
-                    <td>{{ b.file_size_bytes|filesizeformat }}</td>
+                    <td><code style="font-size:0.8rem;">{{ b.filename }}</code></td>
+                    <td class="num">{{ b.file_size_bytes|filesizeformat }}</td>
                     <td>
                         {% if b.integrity_check_passed %}
-                            <span class="day-badge day-open">✓ ত্রুটিমুক্ত (Passed)</span>
+                            <span class="badge badge-success">✓ ত্রুটিমুক্ত</span>
                         {% else %}
-                            <span class="day-badge day-closed">✗ ত্রুটিযুক্ত (Failed)</span>
+                            <span class="badge badge-danger">✗ ত্রুটিযুক্ত</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if b.status == 'SUCCESS' %}
-                            <span style="color: #15803d; font-weight: bold;">সফল</span>
+                            <span class="text-success fw-bold">সফল</span>
                         {% else %}
-                            <span style="color: #b91c1c; font-weight: bold;">ব্যর্থ</span>
+                            <span class="text-danger fw-bold">ব্যর্থ</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if b.integrity_check_passed %}
-                            <button type="button" onclick="openRestoreModal('{{ b.id }}', '{{ b.filename }}', '{{ b.filepath|escapejs }}')" class="btn btn-danger btn-sm" style="padding: 2px 8px; font-size: 0.8rem;">
-                                ⚠️ রিস্টোর করুন
-                            </button>
+                            <button type="button" onclick="openRestoreModal('{{ b.id }}','{{ b.filename }}','{{ b.filepath|escapejs }}')"
+                                    class="btn btn-danger btn-sm">⚠️ রিস্টোর</button>
                         {% else %}
-                            <span style="color: var(--text-muted); font-size: 0.8rem;">রিস্টোর অনুপযোগী</span>
+                            <span class="text-muted" style="font-size:0.8rem;">অনুপযোগী</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        এখনও কোনো ব্যাকআপ ফাইল তৈরি হয়নি। উপরের "এখনই ব্যাকআপ নিন" বাটনে ক্লিক করুন।
+                    <td colspan="7" style="text-align:center;color:var(--text-muted);padding:2.5rem;">
+                        এখনও কোনো ব্যাকআপ নেই। উপরের বাটনে ক্লিক করুন।
                     </td>
                 </tr>
                 {% endfor %}
@@ -100,29 +104,29 @@
     </div>
 </div>
 
-<!-- Safe Restore Confirmation Modal -->
-<div id="restore-modal" class="modal-overlay" style="display: none;">
+<!-- Restore Modal -->
+<div id="restore-modal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <form method="POST" action="{% url 'restore_backup_view' %}">
             {% csrf_token %}
             <input type="hidden" name="backup_filepath" id="restore-file-path">
             <div class="modal-header">
-                <h3 style="color: #b91c1c;">⚠️ ডাটাবেজ রিস্টোর নিশ্চিতকরণ (Database Restore)</h3>
-                <button type="button" onclick="closeRestoreModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <h3 style="color:var(--danger);">⚠️ ডাটাবেজ রিস্টোর নিশ্চিতকরণ</h3>
+                <button type="button" onclick="closeRestoreModal()" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="alert-box alert-error">
-                    <strong>সতর্কতা:</strong> আপনি ব্যাকআপ ফাইল <strong id="restore-file-name"></strong> থেকে ডাটাবেজ রিস্টোর করতে যাচ্ছেন।<br>
-                    রিস্টোর করার আগে সিস্টেম স্বয়ংক্রিয়ভাবে বর্তমান ডাটাবেজের একটি প্রি-রিস্টোর ইমার্জেন্সি ব্যাকআপ রেখে দেবে।
+                    <strong>সতর্কতা:</strong> ব্যাকআপ <strong id="restore-file-name"></strong> থেকে রিস্টোর করতে যাচ্ছেন।
+                    রিস্টোরের আগে সিস্টেম স্বয়ংক্রিয়ভাবে একটি জরুরি ব্যাকআপ রেখে দেবে।
                 </div>
                 <div class="form-group">
-                    <label class="form-label">নিশ্চিত করতে বড় হাতের অক্ষরে <strong>RESTORE</strong> শব্দটি লিখুন:</label>
+                    <label class="form-label">নিশ্চিত করতে <strong>RESTORE</strong> লিখুন:</label>
                     <input type="text" name="confirmation_code" class="form-control" placeholder="RESTORE" required>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeRestoreModal()" class="btn btn-secondary">বাতিল</button>
-                <button type="submit" class="btn btn-danger">✓ নিশ্চিতভাবে রিস্টোর সম্পন্ন করুন</button>
+                <button type="submit" class="btn btn-danger">✓ নিশ্চিতভাবে রিস্টোর করুন</button>
             </div>
         </form>
     </div>
@@ -134,8 +138,6 @@
         document.getElementById('restore-file-path').value = filepath;
         document.getElementById('restore-modal').style.display = 'flex';
     }
-    function closeRestoreModal() {
-        document.getElementById('restore-modal').style.display = 'none';
-    }
+    function closeRestoreModal() { document.getElementById('restore-modal').style.display = 'none'; }
 </script>
 {% endblock %}

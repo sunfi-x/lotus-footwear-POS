@@ -1,71 +1,67 @@
 {% extends 'base.html' %}
 
-{% block title %}দোকান সেটিংস - Lotus Footwear{% endblock %}
+{% block title %}দোকান সেটিংস — Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-        <div>
-            <h1 style="font-size: 1.5rem; color: #1e293b;">দোকান ও রসিদ সেটিংস (Shop Configuration)</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">দোকানের নাম, ঠিকানা, মোবাইল নম্বর এবং ৫৮মিমি থার্মাল প্রিন্টারের রসিদের লেখা পরিবর্তন করুন।</p>
-        </div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">দোকান ও রসিদ সেটিংস</h1>
+        <p class="page-subtitle">দোকানের নাম, ঠিকানা, মোবাইল ও থার্মাল প্রিন্টার রসিদ কনফিগারেশন।</p>
     </div>
+</div>
 
-    <div style="background: #ffffff; padding: 2rem; border-radius: 10px; border: 1px solid var(--border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <form method="POST">
-            {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label">দোকানের নাম (Shop Name):</label>
-                <input type="text" name="shop_name" class="form-control" value="{{ settings.shop_name }}" required>
-            </div>
+<div style="max-width:780px;">
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
 
-            <div class="form-group">
-                <label class="form-label">যোগাযোগের মোবাইল নম্বর (Shop Phone):</label>
-                <input type="text" name="shop_phone" class="form-control" value="{{ settings.shop_phone }}" required>
-            </div>
+                <div class="section-label" style="margin-bottom:0.75rem;">দোকানের মূল তথ্য</div>
+                <div class="form-group">
+                    <label class="form-label">দোকানের নাম (Shop Name):</label>
+                    <input type="text" name="shop_name" class="form-control" value="{{ settings.shop_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">যোগাযোগের মোবাইল নম্বর:</label>
+                    <input type="text" name="shop_phone" class="form-control" value="{{ settings.shop_phone }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">দোকানের সম্পূর্ণ ঠিকানা:</label>
+                    <textarea name="shop_address" class="form-control" rows="2" required>{{ settings.shop_address }}</textarea>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">দোকানের সম্পূর্ণ ঠিকানা (Shop Address):</label>
-                <textarea name="shop_address" class="form-control" rows="2" required>{{ settings.shop_address }}</textarea>
-            </div>
-
-            <div style="border-top: 1px solid var(--border-light); padding-top: 1.25rem; margin-top: 1.5rem;">
-                <h3 style="font-size: 1.1rem; color: #1e3a8a; margin-bottom: 0.75rem;">৫৮মিমি থার্মাল রসিদ সেটিংস (Thermal Receipt Settings)</h3>
+                <hr class="divider">
+                <div class="section-label" style="margin-bottom:0.75rem;">৫৮মিমি থার্মাল রসিদ সেটিংস</div>
 
                 <div class="form-group">
-                    <label class="form-label">রসিদের হেডার টাইটেল (Receipt Header):</label>
+                    <label class="form-label">রসিদের হেডার টাইটেল:</label>
                     <input type="text" name="receipt_header" class="form-control" value="{{ settings.receipt_header }}">
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">রসিদের শেষের শুভেচ্ছা বার্তা ও ফেরত নীতি (Receipt Footer Note):</label>
+                    <label class="form-label">রসিদের শেষের শুভেচ্ছা বার্তা / ফেরত নীতি:</label>
                     <textarea name="receipt_footer" class="form-control" rows="3">{{ settings.receipt_footer }}</textarea>
-                    <small style="color: var(--text-muted);">রসিদের নিচে কাস্টমারের উদ্দেশ্যে এই লেখাটি প্রিন্ট হবে (English text only recommend)।</small>
-                </div>
-            </div>
-
-            <div style="border-top: 1px solid var(--border-light); padding-top: 1.25rem; margin-top: 1.5rem;">
-                <h3 style="font-size: 1.1rem; color: #1e3a8a; margin-bottom: 0.75rem;">সিস্টেম ব্যাকআপ ও ইনভেন্টরি সতর্কতা</h3>
-
-                <div class="form-group">
-                    <label class="form-label">এক্সটারনাল পেনড্রাইভ / ব্যাকআপ ফোল্ডার পাথ (External Drive Path):</label>
-                    <input type="text" name="external_backup_directory" class="form-control" value="{{ settings.external_backup_directory }}" placeholder="যেমন: D:\LotusPOS_Backups বা E:\Backups">
-                    <small style="color: var(--text-muted);">পেনড্রাইভ বা এক্সটারনাল ড্রাইভে অতিরিক্ত কপি রাখার জন্য পাথ দিন।</small>
+                    <span class="form-hint">রসিদের নিচে কাস্টমারের উদ্দেশ্যে এই লেখা প্রিন্ট হবে (English only recommended)।</span>
                 </div>
 
+                <hr class="divider">
+                <div class="section-label" style="margin-bottom:0.75rem;">ব্যাকআপ ও স্টক সতর্কতা</div>
+
                 <div class="form-group">
-                    <label class="form-label">কম স্টক সতর্কতা থ্রেশহোল্ড (Low Stock Alert Threshold):</label>
+                    <label class="form-label">এক্সটারনাল ব্যাকআপ ফোল্ডার পাথ:</label>
+                    <input type="text" name="external_backup_directory" class="form-control" value="{{ settings.external_backup_directory }}" placeholder="যেমন: D:\LotusPOS_Backups">
+                    <span class="form-hint">পেনড্রাইভ বা এক্সটারনাল ড্রাইভে অতিরিক্ত কপি রাখার পাথ।</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">কম স্টক সতর্কতা থ্রেশহোল্ড (জোড়া):</label>
                     <input type="number" name="low_stock_threshold" class="form-control" value="{{ settings.low_stock_threshold }}" min="1">
-                    <small style="color: var(--text-muted);">যেকোনো সাইজ/কালারের স্টক এই সংখ্যার নিচে নামলে এডমিন ড্যাশবোর্ডে লাল সতর্কতা দেখাবে।</small>
+                    <span class="form-hint">এই সংখ্যার নিচে নামলে এডমিন ড্যাশবোর্ডে সতর্কতা দেখাবে।</span>
                 </div>
-            </div>
 
-            <div style="margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
-                    ✓ সেটিংস সংরক্ষণ করুন
-                </button>
-            </div>
-        </form>
+                <div style="margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">✓ সেটিংস সংরক্ষণ করুন</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

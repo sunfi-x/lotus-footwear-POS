@@ -1,77 +1,75 @@
 {% extends 'base.html' %}
 
-{% block title %}অডিট লগ ও সিস্টেম হিস্ট্রি - Lotus Footwear{% endblock %}
+{% block title %}অডিট লগ — Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.5rem; color: #1e293b;">সিস্টেম অডিট ও নিরাপত্তা লগ (Audit Log Trail)</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-            দোকানের বিলিং, মূল্য পরিবর্তন, দিন সমাপ্তি, স্টক সমন্বয়, ব্যাকআপ ও রিস্টোরের সুরক্ষিত অডিট ট্রেইল।
-        </p>
+        <h1 class="page-title">সিস্টেম অডিট ও নিরাপত্তা লগ</h1>
+        <p class="page-subtitle">বিলিং, মূল্য পরিবর্তন, দিন সমাপ্তি, স্টক সমন্বয় ও ব্যাকআপের সুরক্ষিত লগ।</p>
     </div>
 </div>
 
 <!-- Filter Bar -->
-<div style="background: #ffffff; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 1.25rem;">
-    <form method="GET" style="display: flex; gap: 1rem; align-items: end;">
-        <div class="form-group" style="margin-bottom: 0; flex: 1;">
-            <label class="form-label">অ্যাকশন ধরন দিয়ে ফিল্টার করুন:</label>
-            <select name="action" class="form-control">
-                <option value="">-- সকল অ্যাকশন --</option>
-                <option value="SALE_CREATE" {% if selected_action == 'SALE_CREATE' %}selected{% endif %}>বিল তৈরি (Sale Create)</option>
-                <option value="SALE_CANCEL" {% if selected_action == 'SALE_CANCEL' %}selected{% endif %}>বিল বাতিল (Sale Cancel)</option>
-                <option value="STOCK_ADJUST" {% if selected_action == 'STOCK_ADJUST' %}selected{% endif %}>স্টক সমন্বয় (Stock Adjust)</option>
-                <option value="CSV_IMPORT" {% if selected_action == 'CSV_IMPORT' %}selected{% endif %}>CSV ইমপোর্ট (CSV Import)</option>
-                <option value="DAY_OPEN" {% if selected_action == 'DAY_OPEN' %}selected{% endif %}>দিন শুরু (Day Open)</option>
-                <option value="DAY_CLOSE" {% if selected_action == 'DAY_CLOSE' %}selected{% endif %}>দিন সমাপ্তি (Day Close)</option>
-                <option value="BACKUP_CREATE" {% if selected_action == 'BACKUP_CREATE' %}selected{% endif %}>ব্যাকআপ গ্রহণ (Backup)</option>
-                <option value="BACKUP_RESTORE" {% if selected_action == 'BACKUP_RESTORE' %}selected{% endif %}>ব্যাকআপ রিস্টোর (Restore)</option>
-            </select>
-        </div>
-        <div>
-            <button type="submit" class="btn btn-primary">ফিল্টার</button>
-            <a href="{% url 'audit_logs' %}" class="btn btn-secondary">রিসেট</a>
-        </div>
-    </form>
+<div class="card mb-2">
+    <div class="card-body" style="padding:1rem 1.25rem;">
+        <form method="GET" style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+            <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
+                <label class="form-label">অ্যাকশন ধরন দিয়ে ফিল্টার:</label>
+                <select name="action" class="form-control">
+                    <option value="">-- সকল অ্যাকশন --</option>
+                    <option value="SALE_CREATE"   {% if selected_action == 'SALE_CREATE'   %}selected{% endif %}>বিল তৈরি (Sale Create)</option>
+                    <option value="SALE_CANCEL"   {% if selected_action == 'SALE_CANCEL'   %}selected{% endif %}>বিল বাতিল (Sale Cancel)</option>
+                    <option value="STOCK_ADJUST"  {% if selected_action == 'STOCK_ADJUST'  %}selected{% endif %}>স্টক সমন্বয় (Stock Adjust)</option>
+                    <option value="CSV_IMPORT"    {% if selected_action == 'CSV_IMPORT'    %}selected{% endif %}>CSV ইমপোর্ট</option>
+                    <option value="DAY_OPEN"      {% if selected_action == 'DAY_OPEN'      %}selected{% endif %}>দিন শুরু (Day Open)</option>
+                    <option value="DAY_CLOSE"     {% if selected_action == 'DAY_CLOSE'     %}selected{% endif %}>দিন সমাপ্তি (Day Close)</option>
+                    <option value="BACKUP_CREATE" {% if selected_action == 'BACKUP_CREATE' %}selected{% endif %}>ব্যাকআপ গ্রহণ</option>
+                    <option value="BACKUP_RESTORE"{% if selected_action == 'BACKUP_RESTORE'%}selected{% endif %}>ব্যাকআপ রিস্টোর</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+                <button type="submit" class="btn btn-primary">ফিল্টার</button>
+                <a href="{% url 'audit_logs' %}" class="btn btn-secondary">রিসেট</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Table -->
-<div class="table-responsive">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>তারিখ ও সময়</th>
-                <th>ব্যবহারকারী (User / Role)</th>
-                <th>অ্যাকশন</th>
-                <th>এনটিটি রেফারেন্স</th>
-                <th>বিস্তারিত বিবরণ (Audit Details)</th>
-                <th>আইপি</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td style="white-space: nowrap;">{{ log.timestamp|date:"d M Y, h:i:s A" }}</td>
-                <td>
-                    <strong>{{ log.username }}</strong>
-                    <span class="badge-role {% if log.role == 'admin' %}role-admin{% else %}role-staff{% endif %}" style="font-size: 0.7rem;">
-                        {{ log.role }}
-                    </span>
-                </td>
-                <td><strong>{{ log.get_action_type_display }}</strong></td>
-                <td><code>{{ log.entity_type }} {{ log.entity_id }}</code></td>
-                <td>{{ log.details }}</td>
-                <td><small style="color: var(--text-muted);">{{ log.ip_address }}</small></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                    কোনো অডিট লগ রেকর্ড পাওয়া যায়নি।
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card">
+    <div class="table-responsive" style="border:none;border-radius:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>তারিখ ও সময়</th>
+                    <th>ব্যবহারকারী</th>
+                    <th>অ্যাকশন</th>
+                    <th>এনটিটি রেফারেন্স</th>
+                    <th>বিস্তারিত</th>
+                    <th>আইপি</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);">{{ log.timestamp|date:"d M Y, h:i:s A" }}</td>
+                    <td>
+                        <strong>{{ log.username }}</strong>
+                        <span class="badge {% if log.role == 'admin' %}badge-warning{% else %}badge-info{% endif %}" style="margin-left:4px;">{{ log.role }}</span>
+                    </td>
+                    <td><strong>{{ log.get_action_type_display }}</strong></td>
+                    <td><code style="font-size:0.8rem;background:var(--bg);padding:2px 6px;border-radius:4px;">{{ log.entity_type }} {{ log.entity_id }}</code></td>
+                    <td style="font-size:0.85rem;max-width:300px;">{{ log.details }}</td>
+                    <td><small class="text-muted">{{ log.ip_address }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center;color:var(--text-muted);padding:2.5rem;">কোনো অডিট লগ রেকর্ড পাওয়া যায়নি।</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

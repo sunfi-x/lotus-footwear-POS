@@ -4,55 +4,55 @@
 {% block title %}{{ salesman.name }} - সেলসম্যান পেমেন্ট হিস্ট্রি | Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+<div class="page-header-bar">
     <div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             <a href="{% url 'salesman_payments' %}" class="btn btn-secondary btn-sm">← সকল সেলসম্যান ও পেমেন্ট</a>
-            <span style="font-size: 1.4rem; color: #1e293b; font-weight: 700;">👤 {{ salesman.name }}</span>
+            <h1 class="page-title" style="margin: 0;">👤 {{ salesman.name }}</h1>
             {% if salesman.is_active %}
-                <span class="day-badge day-open">সক্রিয় (Active)</span>
+                <span class="badge badge-success">সক্রিয় (Active)</span>
             {% else %}
-                <span class="day-badge day-closed">নিষ্ক্রিয় (Inactive)</span>
+                <span class="badge badge-danger">নিষ্ক্রিয় (Inactive)</span>
             {% endif %}
         </div>
-        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 4px 0 0;">
-            সেলসম্যান আইডি: <strong style="font-family: monospace; color: #1e3a8a;">{{ salesman.salesman_id }}</strong> | 
-            📞 {{ salesman.phone|default:"ফোন নম্বর নেই" }} | 
+        <p class="page-subtitle" style="margin-top: 6px;">
+            সেলসম্যান আইডি: <strong style="font-family: monospace; color: var(--primary);">{{ salesman.salesman_id }}</strong> &nbsp;|&nbsp; 
+            📞 {{ salesman.phone|default:"ফোন নম্বর নেই" }} &nbsp;|&nbsp; 
             যোগদানের তারিখ: {{ salesman.joining_date|date:"d M Y"|default:"উল্লেখ নেই" }}
         </p>
     </div>
 
     <div>
-        <button type="button" onclick="openRecordPaymentModalForSalesman('{{ salesman.salesman_id }}')" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 7px 16px;">
+        <button type="button" onclick="openRecordPaymentModalForSalesman('{{ salesman.salesman_id }}')" class="btn btn-primary btn-sm">
             + এই সেলসম্যানকে পেমেন্ট করুন
         </button>
     </div>
 </div>
 
 <!-- Salesman Profile Summary Stats -->
-<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; gap: 1rem;">
+<div class="stats-grid stats-grid-4" style="margin-bottom: 1.5rem;">
     <!-- 1. Total Completed Payments -->
-    <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
-        <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট সম্পন্ন পেমেন্ট (Completed Payments)</div>
-        <div class="value" style="color: #1e3a8a;">
+    <div class="stat-card stat-card-purple">
+        <div class="label">মোট সম্পন্ন পেমেন্ট (Completed)</div>
+        <div class="value">
             {{ total_completed_count }} <span style="font-size: 0.95rem; font-weight: 500;">টি</span>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">সফলভাবে পরিশোধিত লেনদেনের সংখ্যা</div>
+        <div class="card-desc">সফলভাবে পরিশোধিত লেনদেনের সংখ্যা</div>
     </div>
 
     <!-- 2. Total Amount Paid in Date Range -->
-    <div class="stat-card success" style="border-top: 4px solid #15803d;">
-        <div class="label" style="font-weight: 700; color: #15803d;">মোট পরিশোধিত টাকা (Total Paid)</div>
-        <div class="value" style="color: #15803d;">
+    <div class="stat-card stat-card-green">
+        <div class="label">মোট পরিশোধিত টাকা (Total Paid)</div>
+        <div class="value">
             ৳ {{ total_amount_paid|default:0|intcomma }}
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">নির্বাচিত সময়ে এই সেলসম্যানকে দেওয়া মোট টাকা</div>
+        <div class="card-desc">নির্বাচিত সময়ে দেওয়া মোট টাকা</div>
     </div>
 
     <!-- 3. Payment Types Breakdown -->
-    <div class="stat-card primary" style="border-top: 4px solid #0284c7;">
-        <div class="label" style="font-weight: 700; color: #0284c7;">পেমেন্ট টাইপ বিশ্লেষণ (By Type)</div>
-        <div style="font-size: 0.82rem; color: #334155; margin-top: 6px; line-height: 1.4;">
+    <div class="stat-card stat-card-blue">
+        <div class="label">পেমেন্ট টাইপ বিশ্লেষণ (By Type)</div>
+        <div style="font-size: 0.82rem; color: var(--text-main); margin-top: 6px; line-height: 1.4;">
             {% for t in type_breakdown %}
                 <div>• {{ t.payment_type }}: <strong>৳ {{ t.total|intcomma }}</strong> ({{ t.count }} টি)</div>
             {% empty %}
@@ -62,9 +62,9 @@
     </div>
 
     <!-- 4. Payment Methods Breakdown -->
-    <div class="stat-card primary" style="border-top: 4px solid #a21caf;">
-        <div class="label" style="font-weight: 700; color: #a21caf;">পেমেন্ট মাধ্যম বিশ্লেষণ (By Method)</div>
-        <div style="font-size: 0.82rem; color: #334155; margin-top: 6px; line-height: 1.4;">
+    <div class="stat-card stat-card-purple">
+        <div class="label">পেমেন্ট মাধ্যম (By Method)</div>
+        <div style="font-size: 0.82rem; color: var(--text-main); margin-top: 6px; line-height: 1.4;">
             {% for m in method_breakdown %}
                 <div>• {{ m.payment_method }}: <strong>৳ {{ m.total|intcomma }}</strong> ({{ m.count }} টি)</div>
             {% empty %}
@@ -75,101 +75,104 @@
 </div>
 
 <!-- Filter Bar -->
-<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-    <form method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
-        <div>
-            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">পেমেন্ট টাইপ:</label>
-            <select name="payment_type" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
-                <option value="">-- সকল টাইপ --</option>
-                <option value="SALARY" {% if selected_type == 'SALARY' %}selected{% endif %}>Salary (মাসিক বেতন)</option>
-                <option value="ADVANCE" {% if selected_type == 'ADVANCE' %}selected{% endif %}>Advance (অগ্রিম)</option>
-                <option value="BONUS" {% if selected_type == 'BONUS' %}selected{% endif %}>Bonus (বোনাস/ইনসেন্টিভ)</option>
-                <option value="OTHER" {% if selected_type == 'OTHER' %}selected{% endif %}>Other (অন্যান্য ভাতা)</option>
-            </select>
-        </div>
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body">
+        <form method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">পেমেন্ট টাইপ:</label>
+                <select name="payment_type" class="form-control" style="font-size: 0.85rem; padding: 6px 10px;">
+                    <option value="">-- সকল টাইপ --</option>
+                    <option value="SALARY" {% if selected_type == 'SALARY' %}selected{% endif %}>Salary (মাসিক বেতন)</option>
+                    <option value="ADVANCE" {% if selected_type == 'ADVANCE' %}selected{% endif %}>Advance (অগ্রিম)</option>
+                    <option value="BONUS" {% if selected_type == 'BONUS' %}selected{% endif %}>Bonus (বোনাস/ইনসেন্টিভ)</option>
+                    <option value="OTHER" {% if selected_type == 'OTHER' %}selected{% endif %}>Other (অন্যান্য ভাতা)</option>
+                </select>
+            </div>
 
-        <div>
-            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">পেমেন্ট মেথড:</label>
-            <select name="payment_method" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
-                <option value="">-- সকল মেথড --</option>
-                <option value="CASH" {% if selected_method == 'CASH' %}selected{% endif %}>Cash (নগদ)</option>
-                <option value="BKASH" {% if selected_method == 'BKASH' %}selected{% endif %}>bKash (বিকাশ)</option>
-                <option value="NAGAD" {% if selected_method == 'NAGAD' %}selected{% endif %}>Nagad (নগদ)</option>
-                <option value="BANK" {% if selected_method == 'BANK' %}selected{% endif %}>Bank Transfer</option>
-                <option value="CARD" {% if selected_method == 'CARD' %}selected{% endif %}>Card (কার্ড)</option>
-            </select>
-        </div>
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">পেমেন্ট মেথড:</label>
+                <select name="payment_method" class="form-control" style="font-size: 0.85rem; padding: 6px 10px;">
+                    <option value="">-- সকল মেথড --</option>
+                    <option value="CASH" {% if selected_method == 'CASH' %}selected{% endif %}>Cash (নগদ)</option>
+                    <option value="BKASH" {% if selected_method == 'BKASH' %}selected{% endif %}>bKash (বিকাশ)</option>
+                    <option value="NAGAD" {% if selected_method == 'NAGAD' %}selected{% endif %}>Nagad (নগদ)</option>
+                    <option value="BANK" {% if selected_method == 'BANK' %}selected{% endif %}>Bank Transfer</option>
+                    <option value="CARD" {% if selected_method == 'CARD' %}selected{% endif %}>Card (কার্ড)</option>
+                </select>
+            </div>
 
-        <div>
-            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">শুরুর তারিখ:</label>
-            <input type="date" name="start_date" value="{{ start_date }}" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
-        </div>
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">শুরুর তারিখ:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control" style="font-size: 0.85rem; padding: 6px 10px;">
+            </div>
 
-        <div>
-            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 2px;">শেষ তারিখ:</label>
-            <input type="date" name="end_date" value="{{ end_date }}" class="form-control" style="font-size: 0.85rem; padding: 5px 8px;">
-        </div>
+            <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">শেষ তারিখ:</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control" style="font-size: 0.85rem; padding: 6px 10px;">
+            </div>
 
-        <button type="submit" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">ফিল্টার</button>
-        <a href="{% url 'individual_salesman_history' salesman.salesman_id %}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">রিসেট</a>
-    </form>
+            <button type="submit" class="btn btn-primary" style="padding: 7px 16px; font-size: 0.85rem;">ফিল্টার</button>
+            <a href="{% url 'individual_salesman_history' salesman.salesman_id %}" class="btn btn-secondary" style="padding: 7px 14px; font-size: 0.85rem;">রিসেট</a>
+        </form>
+    </div>
 </div>
 
 <!-- Payments History Table -->
-<div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-    <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; color: #1e293b;">
-        📜 {{ salesman.name }} এর ব্যক্তিগত পেমেন্ট হিস্ট্রি
-    </h3>
-
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Payment ID</th>
-                    <th>তারিখ</th>
-                    <th>পেমেন্ট টাইপ</th>
-                    <th>টাকার পরিমাণ (৳)</th>
-                    <th>মেথড</th>
-                    <th>রেফারেন্স / TrxID</th>
-                    <th>মাসের বিবরণ</th>
-                    <th>নোট</th>
-                    <th>স্ট্যাটাস</th>
-                    <th>রেকর্ড করেছেন</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in payments %}
-                <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: #991b1b; text-decoration: line-through;{% endif %}">
-                    <td><strong style="font-family: monospace; color: #1e3a8a;">{{ p.payment_id }}</strong></td>
-                    <td>{{ p.payment_date|date:"d M Y" }}</td>
-                    <td><span class="day-badge" style="background: #f1f5f9; color: #334155;">{{ p.get_payment_type_display }}</span></td>
-                    <td><strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: #991b1b;{% else %}color: #15803d;{% endif %}">৳ {{ p.amount|intcomma }}</strong></td>
-                    <td>
-                        <span class="day-badge" style="{% if p.payment_method == 'CASH' %}background: #f0fdf4; color: #166534;{% else %}background: #eff6ff; color: #1e40af;{% endif %}">
-                            {{ p.get_payment_method_display }}
-                        </span>
-                    </td>
-                    <td>{{ p.reference_id|default:"—" }}</td>
-                    <td>{{ p.period_covered|default:"—" }}</td>
-                    <td>{{ p.notes|default:"—" }}</td>
-                    <td>
-                        {% if p.status == 'COMPLETED' %}
-                            <span class="day-badge day-open" style="font-size: 0.72rem;">সম্পন্ন</span>
-                        {% else %}
-                            <span class="day-badge day-closed" style="font-size: 0.72rem;">বাতিল/রিভার্সড</span>
-                        {% endif %}
-                    </td>
-                    <td style="font-size: 0.8rem; color: var(--text-muted);">{{ p.recorded_by.username|default:"System" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        এই সেলসম্যানের কোনো পেমেন্ট রেকর্ড নেই।
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card">
+    <div class="card-header-bar">
+        <h3 class="card-title">📜 {{ salesman.name }} এর ব্যক্তিগত পেমেন্ট হিস্ট্রি</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>তারিখ</th>
+                        <th>পেমেন্ট টাইপ</th>
+                        <th>টাকার পরিমাণ (৳)</th>
+                        <th>মেথড</th>
+                        <th>রেফারেন্স / TrxID</th>
+                        <th>মাসের বিবরণ</th>
+                        <th>নোট</th>
+                        <th>স্ট্যাটাস</th>
+                        <th>রেকর্ড করেছেন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr style="{% if p.status == 'REVERSED' %}background: #fef2f2; color: var(--danger); text-decoration: line-through;{% endif %}">
+                        <td><strong style="font-family: monospace; color: var(--primary);">{{ p.payment_id }}</strong></td>
+                        <td>{{ p.payment_date|date:"d M Y" }}</td>
+                        <td><span class="badge badge-neutral">{{ p.get_payment_type_display }}</span></td>
+                        <td><strong style="font-size: 1rem; {% if p.status == 'REVERSED' %}color: var(--danger);{% else %}color: var(--success);{% endif %}">৳ {{ p.amount|intcomma }}</strong></td>
+                        <td>
+                            <span class="badge {% if p.payment_method == 'CASH' %}badge-success{% else %}badge-info{% endif %}">
+                                {{ p.get_payment_method_display }}
+                            </span>
+                        </td>
+                        <td>{{ p.reference_id|default:"—" }}</td>
+                        <td>{{ p.period_covered|default:"—" }}</td>
+                        <td>{{ p.notes|default:"—" }}</td>
+                        <td>
+                            {% if p.status == 'COMPLETED' %}
+                                <span class="badge badge-success" style="font-size: 0.72rem;">সম্পন্ন</span>
+                            {% else %}
+                                <span class="badge badge-danger" style="font-size: 0.72rem;">বাতিল/রিভার্সড</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ p.recorded_by.username|default:"System" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                            এই সেলসম্যানের কোনো পেমেন্ট রেকর্ড নেই।
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

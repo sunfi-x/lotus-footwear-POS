@@ -1,121 +1,114 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-{% block title %}খাতা থেকে CSV স্টক মাইগ্রেশন - Lotus Footwear{% endblock %}
+{% block title %}CSV স্টক মাইগ্রেশন — Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.5rem; color: #1e293b;">কাগজের খাতা থেকে CSV স্টক মাইগ্রেশন (Inventory Migration)</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-            দোকানের প্রায় ৩,৫২৮ জোড়া জুতা ও ১,০০০+ মডেলের প্রাথমিক প্রারম্ভিক স্টক একবারে নিরাপদভাবে সিস্টেমে তুলুন।
-        </p>
+        <h1 class="page-title">কাগজের খাতা থেকে CSV স্টক মাইগ্রেশন</h1>
+        <p class="page-subtitle">প্রারম্ভিক স্টক একবারে নিরাপদভাবে সিস্টেমে তুলুন।</p>
     </div>
-    <div>
-        <a href="{% url 'download_csv_template' %}" class="btn btn-primary btn-sm">
-            📥 নমুনা CSV টেমপ্লেট ডাউনলোড (Download Sample)
-        </a>
+    <div class="page-actions">
+        <a href="{% url 'download_csv_template' %}" class="btn btn-secondary">📥 নমুনা CSV টেমপ্লেট ডাউনলোড</a>
     </div>
 </div>
 
-<!-- Upload & Dry Run Card -->
-<div style="background: #ffffff; padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border-light); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <h3 style="font-size: 1.15rem; color: #1e3a8a; margin-bottom: 1rem;">১. CSV ফাইল নির্বাচন ও প্রিভিউ যাচাই</h3>
-    
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">কম্পিউটার থেকে পূরণকৃত CSV ফাইল নির্বাচন করুন:</label>
-                <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+<!-- Upload Card -->
+<div class="card mb-3">
+    <div class="card-header-bar">
+        <span class="card-title">১. CSV ফাইল নির্বাচন ও প্রিভিউ যাচাই</span>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:1rem;align-items:flex-end;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">পূরণকৃত CSV ফাইল নির্বাচন করুন:</label>
+                    <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;height:42px;">
+                        <input type="checkbox" name="is_dry_run" value="true" {% if is_dry_run or not submitted %}checked{% endif %} style="width:18px;height:18px;">
+                        <span>ড্রাই-রান প্রিভিউ মোড (নিরাপদ যাচাই)</span>
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="height:42px;">📂 ফাইল পরীক্ষা ও প্রিভিউ</button>
+                </div>
             </div>
-
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; height: 42px;">
-                    <input type="checkbox" name="is_dry_run" value="true" {% if is_dry_run or not submitted %}checked{% endif %} style="width: 18px; height: 18px;">
-                    <span>ড্রাই-রান প্রিভিউ মোড (নিরাপদ যাচাই)</span>
-                </label>
-            </div>
-
-            <div>
-                <button type="submit" class="btn btn-primary" style="height: 42px;">
-                    📂 ফাইল পরীক্ষা ও প্রিভিউ দেখুন
-                </button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 {% if submitted %}
     {% if results.error_rows %}
     <div class="alert-box alert-error">
-        <h4>⚠️ ফাইলে {{ results.error_rows|length }} টি ভুল শনাক্ত হয়েছে! কোনো ডাটা এখনও সেভ করা হয়নি।</h4>
-        <p style="margin-top: 4px; font-size: 0.9rem;">অনুগ্রহ করে নিচের সারিগুলোতে ভুল সংশোধন করে আবার আপলোড করুন:</p>
-        <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.85rem;">
-            {% for err in results.error_rows|slice:":10" %}
-                <li><strong>সারি নং {{ err.row_number }} ({{ err.sku }}):</strong> {{ err.errors|join:", " }}</li>
-            {% endfor %}
-            {% if results.error_rows|length > 10 %}
-                <li>... এবং আরও {{ results.error_rows|length|add:"-10" }} টি সমস্যা রয়েছে।</li>
-            {% endif %}
-        </ul>
+        <div>
+            <strong>⚠️ {{ results.error_rows|length }} টি ভুল শনাক্ত! কোনো ডাটা সেভ হয়নি।</strong>
+            <ul style="margin-left:1.5rem;margin-top:0.5rem;font-size:0.85rem;line-height:1.8;">
+                {% for err in results.error_rows|slice:":10" %}
+                    <li><strong>সারি নং {{ err.row_number }} ({{ err.sku }}):</strong> {{ err.errors|join:", " }}</li>
+                {% endfor %}
+                {% if results.error_rows|length > 10 %}
+                    <li>... এবং আরও {{ results.error_rows|length|add:"-10" }} টি সমস্যা।</li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
     {% else %}
     <div class="alert-box alert-success">
-        ✓ CSV ফাইলের সমস্ত ডাটা সফলভাবে যাচাই করা হয়েছে! কোনো ফরমেট বা ডুপ্লিকেট ত্রুটি পাওয়া যায়নি।
+        ✓ CSV ফাইলের সমস্ত ডাটা সফলভাবে যাচাই! কোনো ভুল পাওয়া যায়নি।
     </div>
 
-    <!-- Migration Summary Statistics -->
-    <div class="stats-grid">
+    <!-- Summary Cards -->
+    <div class="stats-grid stats-grid-4 mb-3">
         <div class="stat-card primary">
-            <div class="label">মোট ভ্যালিড জুতার ভ্যারিয়েন্ট</div>
-            <div class="value" style="color: #1e3a8a;">{{ results.valid_rows }} টি</div>
+            <div class="label">মোট ভ্যালিড ভ্যারিয়েন্ট</div>
+            <div class="value">{{ results.valid_rows }} টি</div>
         </div>
         <div class="stat-card success">
-            <div class="label">মোট প্রারম্ভিক জুতার জোড়া (Total Pairs)</div>
-            <div class="value" style="color: #15803d;">{{ results.total_quantity|intcomma }} জোড়া</div>
+            <div class="label">মোট প্রারম্ভিক জোড়া</div>
+            <div class="value">{{ results.total_quantity|intcomma }}</div>
         </div>
         <div class="stat-card primary">
-            <div class="label">মোট প্রারম্ভিক স্টক ক্রয়মূল্য (Valuation)</div>
-            <div class="value" style="color: #2563eb;">৳ {{ results.total_valuation|intcomma }}</div>
+            <div class="label">মোট ক্রয়মূল্য (Valuation)</div>
+            <div class="value">৳ {{ results.total_valuation|intcomma }}</div>
         </div>
         <div class="stat-card {% if results.is_dry_run %}warning{% else %}success{% endif %}">
             <div class="label">বর্তমান অবস্থা</div>
-            <div class="value" style="font-size: 1.2rem;">
-                {% if results.is_dry_run %}
-                    🔍 প্রিভিউ মোড (সেভ হয়নি)
-                {% else %}
-                    ✓ সফলভাবে সেভ সম্পন্ন!
-                {% endif %}
+            <div class="value" style="font-size:1.1rem;">
+                {% if results.is_dry_run %}🔍 প্রিভিউ{% else %}✓ সেভ সম্পন্ন!{% endif %}
             </div>
         </div>
     </div>
 
     {% if results.is_dry_run %}
-    <div style="background: #fefce8; border: 2px dashed #f59e0b; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div style="background:#fefce8;border:2px dashed #f59e0b;padding:1.25rem;border-radius:var(--radius);margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">
         <div>
-            <strong style="color: #b45309; font-size: 1.05rem;">আপনি কি এই প্রারম্ভিক স্টক চূড়ান্তভাবে সিস্টেমে যুক্ত করতে প্রস্তুত?</strong>
-            <p style="color: #78350f; font-size: 0.85rem; margin-top: 2px;">
-                "চূড়ান্ত স্টক সংরক্ষণ করুন" বাটনে ক্লিক করলে ডাটাবেজে প্রোডাক্ট, ভ্যারিয়েন্ট এবং প্রারম্ভিক স্টক লেজার রেকর্ড তৈরি হবে।
+            <strong style="color:#b45309;">এই প্রারম্ভিক স্টক চূড়ান্তভাবে সিস্টেমে যুক্ত করতে প্রস্তুত?</strong>
+            <p style="color:#78350f;font-size:0.85rem;margin-top:4px;">
+                "চূড়ান্ত স্টক সংরক্ষণ" বাটনে ক্লিক করলে প্রোডাক্ট, ভ্যারিয়েন্ট ও প্রারম্ভিক স্টক লেজার তৈরি হবে।
             </p>
         </div>
         <form method="POST">
             {% csrf_token %}
             <input type="hidden" name="commit_data" value="true">
             <input type="hidden" name="cached_csv" value="{{ raw_csv_text }}">
-            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('আপনি কি নিশ্চিত যে এই প্রারম্ভিক স্টক সংরক্ষণ করতে চান?')">
-                ✓ চূড়ান্ত স্টক সংরক্ষণ করুন (Commit Import)
+            <button type="submit" class="btn btn-success btn-lg"
+                    onclick="return confirm('আপনি কি নিশ্চিত যে এই স্টক সংরক্ষণ করতে চান?')">
+                ✓ চূড়ান্ত স্টক সংরক্ষণ করুন
             </button>
         </form>
     </div>
     {% endif %}
 
     <!-- Preview Table -->
-    <div style="background: #ffffff; border-radius: 10px; border: 1px solid var(--border-light); padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h3 style="font-size: 1.15rem; color: #1e293b; margin-bottom: 1rem;">
-            যাচাইকৃত ডাটা প্রিভিউ (প্রথম ৫০টি আইটেম)
-        </h3>
-        <div class="table-responsive">
+    <div class="card">
+        <div class="card-header-bar">
+            <span class="card-title">যাচাইকৃত ডাটা প্রিভিউ (প্রথম ৫০টি আইটেম)</span>
+        </div>
+        <div class="table-responsive" style="border:none;border-radius:0;">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -125,23 +118,23 @@
                         <th>সাইজ</th>
                         <th>কালার</th>
                         <th>SKU</th>
-                        <th>জোড়া (স্টক)</th>
-                        <th>ক্রয়মূল্য</th>
-                        <th>বিক্রয় দর</th>
+                        <th class="num">জোড়া</th>
+                        <th class="num">ক্রয়মূল্য</th>
+                        <th class="num">বিক্রয় দর</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in results.preview_items %}
                     <tr>
-                        <td>{{ item.row_number }}</td>
+                        <td class="text-muted">{{ item.row_number }}</td>
                         <td><strong>{{ item.code }}</strong></td>
                         <td>{{ item.name }}</td>
-                        <td><span class="day-badge day-open">{{ item.size }}</span></td>
+                        <td><span class="badge badge-primary">{{ item.size }}</span></td>
                         <td>{{ item.colour }}</td>
-                        <td><code>{{ item.sku }}</code></td>
-                        <td><strong>{{ item.quantity }}</strong></td>
-                        <td>৳ {{ item.cost_price }}</td>
-                        <td>৳ {{ item.selling_price }}</td>
+                        <td><code style="font-size:0.8rem;">{{ item.sku }}</code></td>
+                        <td class="num fw-bold">{{ item.quantity }}</td>
+                        <td class="num">৳ {{ item.cost_price }}</td>
+                        <td class="num">৳ {{ item.selling_price }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

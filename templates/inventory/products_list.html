@@ -4,21 +4,18 @@
 {% block title %}জুতার স্টক ও প্রোডাক্টস - Lotus Footwear{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.5rem; color: #1e293b;">জুতার প্রোডাক্ট ও স্টক তালিকা (Products & Inventory)</h1>
+        <h1 class="page-title">জুতার প্রোডাক্ট ও স্টক তালিকা (Products & Inventory)</h1>
         <p style="color: var(--text-muted); font-size: 0.9rem;">সকল মডেল, সাইজ, কালার, বর্তমান মজুদ স্টক ও গড় ক্রয়মূল্য (WAC)</p>
     </div>
-    <div style="display: flex; gap: 0.5rem;">
-        <!-- Single Primary Button as requested -->
-        <button type="button" onclick="openUnifiedProductModal()" class="btn btn-primary btn-sm" style="font-weight: 600; padding: 8px 16px;">
-            + নতুন জুতার মডেল যোগ করুন
-        </button>
+    <div class="page-actions">
+        <button type="button" onclick="openUnifiedProductModal()" class="btn btn-primary">+ নতুন জুতার মডেল যোগ করুন</button>
     </div>
 </div>
 
 <!-- 5 KPI Summary Cards -->
-<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.5rem; gap: 1rem;">
+<div class="stats-grid stats-grid-5" style="margin-bottom:1.5rem;">
     <!-- 1. TOTAL PAIRS IN STOCK -->
     <div class="stat-card primary" style="border-top: 4px solid #1e3a8a;">
         <div class="label" style="font-weight: 700; color: #1e3a8a;">মোট স্টকে জুতা (TOTAL PAIRS)</div>

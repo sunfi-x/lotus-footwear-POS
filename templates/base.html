@@ -9,317 +9,391 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header class="navbar">
-        <a href="/" class="navbar-brand">
-            <span style="font-size: 1.5rem;">👞</span>
-            <span>{{ shop_settings.shop_name }}</span>
-            <span class="badge-offline">Offline POS</span>
+
+{% if user.is_authenticated %}
+<!-- ── App Shell ─────────────────────────────────────────────────────────── -->
+<div class="app-shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <a href="{% url 'home' %}" class="sidebar-brand">
+      <span class="brand-logo">🪷</span>
+      <span class="brand-text">
+        <span class="shop-name">{{ shop_settings.shop_name }}</span>
+        <span class="shop-sub">Offline POS</span>
+      </span>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <!-- OVERVIEW -->
+      <div class="nav-group">
+        <div class="nav-group-label">Overview</div>
+        <a href="{% url 'home' %}" class="nav-link" data-tooltip="হোম ড্যাশবোর্ড">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          <span class="nav-label"><span class="bn">হোম ড্যাশবোর্ড</span><span class="en">Home Overview</span></span>
         </a>
+      </div>
 
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            {% if is_shop_open %}
-                <span class="day-badge day-open">● দোকান খোলা (দিন: {{ current_business_day.date|date:"d M Y" }})</span>
-            {% else %}
-                <span class="day-badge day-closed">○ দোকান বন্ধ (ব্যবসা দিন শুরু হয়নি)</span>
-            {% endif %}
+      <!-- SALES -->
+      <div class="nav-group">
+        <div class="nav-group-label">Sales · বিক্রয়</div>
+        <a href="{% url 'pos_screen' %}" class="nav-link" data-tooltip="নতুন বিল (POS)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.98-1.67L23 6H6"/></svg>
+          <span class="nav-label"><span class="bn">নতুন বিল (POS)</span><span class="en">New Sale / Billing</span></span>
+        </a>
+        <a href="{% url 'invoices_list' %}" class="nav-link" data-tooltip="ইনভয়েস তালিকা">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+          <span class="nav-label"><span class="bn">ইনভয়েস তালিকা</span><span class="en">Invoice List</span></span>
+        </a>
+      </div>
 
-            <div class="user-status">
-                {% if user.is_authenticated %}
-                    <span class="badge-role {% if is_admin_user %}role-admin{% else %}role-staff{% endif %}">
-                        {% if is_admin_user %}মালিক / Admin{% else %}বিক্রয় কর্মী / Staff{% endif %}
-                    </span>
-                    <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.8rem;">লগআউট</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">লগইন</a>
-                {% endif %}
-            </div>
-        </div>
+      <!-- INVENTORY (admin only) -->
+      {% if is_admin_user %}
+      <div class="nav-group">
+        <div class="nav-group-label">Inventory · স্টক</div>
+        <a href="{% url 'products_list' %}" class="nav-link" data-tooltip="জুতার স্টক">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9" y1="14.5" x2="15" y2="14.5"/></svg>
+          <span class="nav-label"><span class="bn">জুতার স্টক</span><span class="en">Products & Stock</span></span>
+        </a>
+        <a href="{% url 'purchases_list' %}" class="nav-link" data-tooltip="নতুন চালান ক্রয়">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5,4.21 12,6.81 16.5,4.21"/><polyline points="7.5,19.79 7.5,14.6 3,12"/><polyline points="21,12 16.5,14.6 16.5,19.79"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span class="nav-label"><span class="bn">নতুন চালান ক্রয়</span><span class="en">New Purchase</span></span>
+        </a>
+        <a href="{% url 'csv_migration' %}" class="nav-link" data-tooltip="CSV স্টক ইমপোর্ট">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          <span class="nav-label"><span class="bn">CSV স্টক ইমপোর্ট</span><span class="en">CSV Import</span></span>
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- FINANCE (admin only) -->
+      {% if is_admin_user %}
+      <div class="nav-group">
+        <div class="nav-group-label">Finance · আর্থিক</div>
+        <a href="{% url 'admin_dashboard' %}" class="nav-link" data-tooltip="এডমিন ড্যাশবোর্ড">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="nav-label"><span class="bn">এডমিন ড্যাশবোর্ড</span><span class="en">Admin Dashboard</span></span>
+        </a>
+        <a href="{% url 'reports_profit' %}" class="nav-link" data-tooltip="লাভ-ক্ষতি রিপোর্ট">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+          <span class="nav-label"><span class="bn">লাভ-ক্ষতি রিপোর্ট</span><span class="en">Profit & Loss</span></span>
+        </a>
+        <a href="{% url 'expenses_list' %}" class="nav-link" data-tooltip="খরচ তালিকা">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          <span class="nav-label"><span class="bn">খরচ তালিকা</span><span class="en">Expenses</span></span>
+        </a>
+        <a href="{% url 'salesman_payments' %}" class="nav-link" data-tooltip="সেলসম্যান পেমেন্ট">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="nav-label"><span class="bn">সেলসম্যান ও পেমেন্ট</span><span class="en">Salesman Payments</span></span>
+        </a>
+        <a href="{% url 'historical_search' %}" class="nav-link" data-tooltip="কোড দিয়ে সার্চ">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="nav-label"><span class="bn">কোড দিয়ে সার্চ</span><span class="en">Historical Search</span></span>
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- SYSTEM (admin only) -->
+      {% if is_admin_user %}
+      <div class="nav-group">
+        <div class="nav-group-label">System · সিস্টেম</div>
+        <a href="{% url 'backup_center' %}" class="nav-link" data-tooltip="ব্যাকআপ ও রিস্টোর">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="nav-label"><span class="bn">ব্যাকআপ ও রিস্টোর</span><span class="en">Backup & Restore</span></span>
+        </a>
+        <a href="{% url 'audit_logs' %}" class="nav-link" data-tooltip="অডিট লগ">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="nav-label"><span class="bn">অডিট লগ</span><span class="en">Audit Logs</span></span>
+        </a>
+        <a href="{% url 'shop_settings' %}" class="nav-link" data-tooltip="সেটিংস">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span class="nav-label"><span class="bn">সেটিংস</span><span class="en">Settings</span></span>
+        </a>
+      </div>
+      {% endif %}
+
+    </nav>
+
+    <!-- Day Action at bottom -->
+    <div class="sidebar-footer">
+      {% if is_shop_open %}
+        <button type="button" onclick="openDayCloseModal()" class="sidebar-day-btn day-close-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <span class="day-btn-text">দিন সমাপ্তি (Close Day)</span>
+        </button>
+      {% else %}
+        <button type="button" onclick="openDayOpenModal()" class="sidebar-day-btn day-open-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span class="day-btn-text">নতুন দিন শুরু (Open Day)</span>
+        </button>
+      {% endif %}
+    </div>
+
+  </aside>
+
+  <!-- ── Main Pane ─────────────────────────────────────────────────────────── -->
+  <div class="main-pane">
+
+    <!-- Top Header -->
+    <header class="app-header">
+      <button class="header-toggle" id="sidebar-toggle" title="Sidebar Toggle (Alt+\)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      {% if is_shop_open %}
+        <span class="header-day-status open">
+          <span class="header-status-dot"></span>
+          দোকান খোলা · {{ current_business_day.date|date:"d M Y" }}
+        </span>
+      {% else %}
+        <span class="header-day-status closed">
+          <span class="header-status-dot"></span>
+          দোকান বন্ধ
+        </span>
+      {% endif %}
+
+      <span class="header-spacer"></span>
+
+      <span class="header-date">{% now "l, d F Y" %}</span>
+
+      <span class="badge-role {% if is_admin_user %}role-admin{% else %}role-staff{% endif %}">
+        {% if is_admin_user %}মালিক · Admin{% else %}বিক্রয় কর্মী · Staff{% endif %}
+      </span>
+
+      <a href="{% url 'logout' %}" class="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        লগআউট
+      </a>
     </header>
 
-    {% if user.is_authenticated %}
-    <nav style="background: #ffffff; border-bottom: 1px solid var(--border-light); padding: 0.5rem 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; align-items: center;">
-        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-            <a href="{% url 'home' %}" class="btn btn-secondary btn-sm">🏠 হোম ওভারভিউ</a>
-            <a href="{% url 'pos_screen' %}" class="btn btn-primary btn-sm" style="background: #1e3a8a;">🛒 নতুন বিল (POS)</a>
-            <a href="{% url 'invoices_list' %}" class="btn btn-secondary btn-sm">📄 ইনভয়েস তালিকা</a>
+    <!-- Page Content -->
+    <main class="main-content">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert-box alert-{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
 
-            {% if is_admin_user %}
-                <span style="border-left: 1px solid var(--border); margin: 0 0.25rem;"></span>
-                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary btn-sm" style="font-weight: 700; color: #1e3a8a;">📊 এডমিন ড্যাশবোর্ড</a>
-                <a href="{% url 'products_list' %}" class="btn btn-secondary btn-sm">👟 জুতার স্টক</a>
-                <a href="{% url 'purchases_list' %}" class="btn btn-secondary btn-sm">📦 নতুন চালান ক্রয়</a>
-                <a href="{% url 'expenses_list' %}" class="btn btn-secondary btn-sm">💸 খরচ</a>
-                <a href="{% url 'salesman_payments' %}" class="btn btn-secondary btn-sm" style="color: #1e3a8a; font-weight: 600;">👤 সেলসম্যান ও পেমেন্ট</a>
-                <a href="{% url 'reports_profit' %}" class="btn btn-secondary btn-sm">📈 লাভ-ক্ষতি রিপোর্ট</a>
-                <a href="{% url 'historical_search' %}" class="btn btn-secondary btn-sm">🔍 কোড দিয়ে বিক্রয় অনুসন্ধান</a>
-                <a href="{% url 'csv_migration' %}" class="btn btn-secondary btn-sm">📥 খাতা থেকে CSV ইমপোর্ট</a>
-                <a href="{% url 'backup_center' %}" class="btn btn-secondary btn-sm" style="color: #0d9488;">💾 ব্যাকআপ ও রিস্টোর</a>
-                <a href="{% url 'audit_logs' %}" class="btn btn-secondary btn-sm">🛡️ অডিট লগ</a>
-                <a href="{% url 'shop_settings' %}" class="btn btn-secondary btn-sm">⚙️ সেটিংস</a>
-            {% endif %}
-        </div>
-
-        <div style="display: flex; gap: 0.5rem;">
-            {% if is_shop_open %}
-                <button type="button" onclick="openDayCloseModal()" class="btn btn-warning btn-sm" style="font-weight: 700;">
-                    🌙 দিন সমাপ্তি (Save & Close Day)
-                </button>
-            {% else %}
-                <button type="button" onclick="openDayOpenModal()" class="btn btn-success btn-sm" style="font-weight: 700;">
-                    ☀️ নতুন দিন শুরু (Open Day)
-                </button>
-            {% endif %}
-        </div>
-    </nav>
-    {% endif %}
-
-    <main class="main-container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert-box alert-{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </main>
 
-    <!-- Day Open Modal -->
-    <div id="day-open-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <form method="POST" action="{% url 'open_business_day' %}">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h3 style="color: #15803d;">☀️ নতুন ব্যবসা দিন শুরু করুন</h3>
-                    <button type="button" onclick="closeDayOpenModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+  </div><!-- /main-pane -->
+</div><!-- /app-shell -->
+
+{% endif %}
+
+<!-- ── Day Open Modal ─────────────────────────────────────────────────────── -->
+<div id="day-open-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'open_business_day' %}">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h3 style="color: var(--success);">☀️ নতুন ব্যবসা দিন শুরু করুন</h3>
+                <button type="button" onclick="closeDayOpenModal()" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">তারিখ (Date):</label>
+                    <input type="date" name="day_date" class="form-control" value="{% now 'Y-m-d' %}" required>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">তারিখ (Date):</label>
-                        <input type="date" name="day_date" class="form-control" value="{% now 'Y-m-d' %}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">শুরুর ক্যাশ ড্রয়ার ব্যালেন্স (Opening Cash in Tk):</label>
-                        <input type="number" step="0.01" name="opening_cash" class="form-control" value="0.00" required>
-                        <small style="color: var(--text-muted);">দোকানের ক্যাশ বাক্সে সকালবেলায় যে পরিমাণ খুচরা টাকা রয়েছে তা লিখুন।</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">নোট (ঐচ্ছিক):</label>
-                        <input type="text" name="notes" class="form-control" placeholder="যেমন: সকালের প্রাথমিক অবস্থা">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">শুরুর ক্যাশ ড্রয়ার ব্যালেন্স (Opening Cash in Tk):</label>
+                    <input type="number" step="0.01" name="opening_cash" class="form-control" value="0.00" required>
+                    <span class="form-hint">দোকানের ক্যাশ বাক্সে সকালবেলায় যে পরিমাণ খুচরা টাকা রয়েছে তা লিখুন।</span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeDayOpenModal()" class="btn btn-secondary">বাতিল</button>
-                    <button type="submit" class="btn btn-success">✓ দিন শুরু করুন</button>
+                <div class="form-group">
+                    <label class="form-label">নোট (ঐচ্ছিক):</label>
+                    <input type="text" name="notes" class="form-control" placeholder="যেমন: সকালের প্রাথমিক অবস্থা">
                 </div>
-            </form>
-        </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeDayOpenModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" class="btn btn-success">✓ দিন শুরু করুন</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Day Close Modal -->
-    <div id="day-close-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="max-width: 620px;">
-            <form method="POST" action="{% url 'close_business_day' %}" id="day-close-form" onsubmit="return validateDayCloseForm()">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h3 style="color: #b45309; display: flex; align-items: center; gap: 0.5rem;">
-                        🌙 <span>দিন সমাপ্তি ও ক্যাশ ড্রয়ার মিলানো (Day-End Cash Reconciliation)</span>
-                    </h3>
-                    <button type="button" onclick="closeDayCloseModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-                </div>
-                <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-                    {% if day_reconciliation.missing_opening_cash %}
-                        <div class="alert-box alert-error" style="font-size: 0.85rem; margin-bottom: 0.75rem;">
-                            ⚠️ <strong>সতর্কতা:</strong> প্রারম্ভিক ক্যাশ ড্রয়ার ব্যালেন্সের তথ্য অসম্পূর্ণ। ক্যাশ সমতায় গরমিল দেখা যেতে পারে।
-                        </div>
-                    {% endif %}
-
-                    <!-- Expected Cash Breakdown Table -->
-                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
-                        <div style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem; margin-bottom: 0.5rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.35rem;">
-                            📊 ক্যাশ ড্রয়ার হিসাব বিবরণী (Cash Drawer Breakdown)
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr auto; row-gap: 0.35rem; font-size: 0.9rem; align-items: center;">
-                            <span style="color: var(--text-muted);">১. প্রারম্ভিক ক্যাশ (Opening Cash):</span>
-                            <span style="font-weight: 600;">৳ {{ day_reconciliation.opening_cash|default:"0.00"|intcomma }}</span>
-
-                            <span style="color: var(--text-muted);">২. নগদ বিক্রয় ও আদায় (Cash Received):</span>
-                            <span style="font-weight: 600; color: #15803d;">+ ৳ {{ day_reconciliation.cash_received|default:"0.00"|intcomma }}</span>
-
-                            <span style="color: var(--text-muted);">৩. অন্যান্য ক্যাশ জমা (Other Cash In):</span>
-                            <span>
-                                <input type="number" step="0.01" name="other_cash_in" id="reconcile-other-cash" 
-                                       value="{{ day_reconciliation.other_cash_in|default:'0.00' }}" 
-                                       class="form-control" style="width: 120px; display: inline-block; padding: 2px 6px; font-size: 0.85rem; text-align: right;"
-                                       oninput="updateExpectedCashLive()">
-                            </span>
-
-                            <span style="color: var(--text-muted);">৪. দোকানের নগদ খরচ (Cash Expenses):</span>
-                            <span style="font-weight: 600; color: #b91c1c;">− ৳ {{ day_reconciliation.cash_expenses|default:"0.00"|intcomma }}</span>
-
-                            <span style="color: var(--text-muted);">৫. গ্রাহক ফেরত বাবদ ক্যাশ (Cash Refunds):</span>
-                            <span style="font-weight: 600; color: #b91c1c;">− ৳ {{ day_reconciliation.returns_amount|default:"0.00"|intcomma }}</span>
-                        </div>
-
-                        <div style="margin-top: 0.65rem; padding-top: 0.65rem; border-top: 2px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 700; color: #0f172a; font-size: 1rem;">ক্যাশ ড্রয়ারে থাকার কথা (Expected Cash):</span>
-                            <span id="reconcile-expected-display" style="font-size: 1.25rem; font-weight: 800; color: #1e3a8a;">
-                                ৳ {{ day_reconciliation.expected_cash|default:"0.00"|intcomma }}
-                            </span>
-                        </div>
+<!-- ── Day Close Modal ────────────────────────────────────────────────────── -->
+<div id="day-close-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 620px;">
+        <form method="POST" action="{% url 'close_business_day' %}" id="day-close-form" onsubmit="return validateDayCloseForm()">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h3 style="color: var(--warning);">🌙 দিন সমাপ্তি ও ক্যাশ ড্রয়ার মিলানো</h3>
+                <button type="button" onclick="closeDayCloseModal()" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                {% if day_reconciliation.missing_opening_cash %}
+                    <div class="alert-box alert-error" style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+                        ⚠️ <strong>সতর্কতা:</strong> প্রারম্ভিক ক্যাশ ড্রয়ার ব্যালেন্সের তথ্য অসম্পূর্ণ।
                     </div>
+                {% endif %}
 
-                    <!-- Actual Cash Count Input -->
-                    <div class="form-group" style="background: #fefce8; padding: 0.85rem; border-radius: 6px; border: 1.5px solid #fef08a;">
-                        <label class="form-label" style="font-weight: 700; color: #854d0e;">
-                            ★ হাতে গুনে পাওয়া আসল ক্যাশ (Actual Cash Count in Tk):
-                        </label>
-                        <input type="number" step="0.01" name="actual_cash" id="reconcile-actual-cash" class="form-control" 
-                               required placeholder="ক্যাশ বাক্সে মোট কত টাকা হাতে রয়েছে" 
-                               style="font-size: 1.3rem; font-weight: 700; color: #15803d; text-align: right;"
-                               oninput="updateExpectedCashLive()">
+                <!-- Cash Breakdown -->
+                <div style="background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0.85rem; margin-bottom: 1rem;">
+                    <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem;">
+                        📊 ক্যাশ ড্রয়ার হিসাব বিবরণী
                     </div>
+                    <div style="display: grid; grid-template-columns: 1fr auto; row-gap: 0.35rem; font-size: 0.88rem; align-items: center;">
+                        <span class="text-muted">১. প্রারম্ভিক ক্যাশ:</span>
+                        <span class="fw-bold">৳ {{ day_reconciliation.opening_cash|default:"0.00"|intcomma }}</span>
 
-                    <!-- Live Difference Display -->
-                    <div id="reconcile-diff-box" style="display: none; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 700;">ক্যাশ গরমিল / সমতা (Cash Difference):</span>
-                            <span id="reconcile-diff-val" style="font-size: 1.15rem; font-weight: 800;">৳ 0.00</span>
-                        </div>
-                        <div id="reconcile-diff-msg" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        <span class="text-muted">২. নগদ বিক্রয় ও আদায়:</span>
+                        <span class="fw-bold text-success">+ ৳ {{ day_reconciliation.cash_received|default:"0.00"|intcomma }}</span>
+
+                        <span class="text-muted">৩. অন্যান্য ক্যাশ জমা:</span>
+                        <span>
+                            <input type="number" step="0.01" name="other_cash_in" id="reconcile-other-cash"
+                                   value="{{ day_reconciliation.other_cash_in|default:'0.00' }}"
+                                   class="form-control" style="width: 120px; display: inline-block; padding: 2px 6px; font-size: 0.85rem; text-align: right;"
+                                   oninput="updateExpectedCashLive()">
+                        </span>
+
+                        <span class="text-muted">৪. দোকানের নগদ খরচ:</span>
+                        <span class="fw-bold text-danger">− ৳ {{ day_reconciliation.cash_expenses|default:"0.00"|intcomma }}</span>
+
+                        <span class="text-muted">৫. গ্রাহক ফেরত বাবদ ক্যাশ:</span>
+                        <span class="fw-bold text-danger">− ৳ {{ day_reconciliation.returns_amount|default:"0.00"|intcomma }}</span>
                     </div>
-
-                    <!-- Discrepancy Reason Field -->
-                    <div class="form-group" id="reconcile-reason-group">
-                        <label class="form-label" id="reconcile-reason-label">
-                            ক্যাশ গরমিল থাকলে কারণ (Discrepancy Reason):
-                        </label>
-                        <textarea name="discrepancy_reason" id="reconcile-discrepancy-reason" class="form-control" rows="2" 
-                                  placeholder="পার্থক্য থাকলে সুনির্দিষ্ট কারণ লিখুন (বাধ্যতামূলক)"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">সমাপ্তির সাধারণ নোট (ঐচ্ছিক):</label>
-                        <input type="text" name="notes" class="form-control" placeholder="যেমন: স্বাভাবিক দিনের সমাপ্তি">
+                    <div style="margin-top: 0.65rem; padding-top: 0.65rem; border-top: 2px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span class="fw-bold">ক্যাশ ড্রয়ারে থাকার কথা (Expected):</span>
+                        <span id="reconcile-expected-display" style="font-size: 1.25rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums;">
+                            ৳ {{ day_reconciliation.expected_cash|default:"0.00"|intcomma }}
+                        </span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeDayCloseModal()" class="btn btn-secondary">বাতিল</button>
-                    <button type="submit" id="reconcile-submit-btn" class="btn btn-warning" style="font-weight: 700;">
-                        ✓ দিন সমাপ্ত ও ব্যাকআপ সংরক্ষণ করুন
-                    </button>
+
+                <!-- Actual Cash Count -->
+                <div class="form-group" style="background: #fefce8; padding: 0.85rem; border-radius: var(--radius); border: 1.5px solid #fef08a;">
+                    <label class="form-label" style="color: #854d0e; font-weight: 700;">
+                        ★ হাতে গুনে পাওয়া আসল ক্যাশ (Actual Cash Count in Tk):
+                    </label>
+                    <input type="number" step="0.01" name="actual_cash" id="reconcile-actual-cash" class="form-control"
+                           required placeholder="ক্যাশ বাক্সে মোট কত টাকা হাতে রয়েছে"
+                           style="font-size: 1.3rem; font-weight: 700; color: var(--success); text-align: right;"
+                           oninput="updateExpectedCashLive()">
                 </div>
-            </form>
-        </div>
+
+                <!-- Live Difference -->
+                <div id="reconcile-diff-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-size: 0.95rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="fw-bold">ক্যাশ গরমিল / সমতা:</span>
+                        <span id="reconcile-diff-val" style="font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums;">৳ 0.00</span>
+                    </div>
+                    <div id="reconcile-diff-msg" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                </div>
+
+                <!-- Discrepancy Reason -->
+                <div class="form-group" id="reconcile-reason-group">
+                    <label class="form-label" id="reconcile-reason-label">ক্যাশ গরমিল থাকলে কারণ:</label>
+                    <textarea name="discrepancy_reason" id="reconcile-discrepancy-reason" class="form-control" rows="2"
+                              placeholder="পার্থক্য থাকলে সুনির্দিষ্ট কারণ লিখুন (বাধ্যতামূলক)"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">সমাপ্তির সাধারণ নোট (ঐচ্ছিক):</label>
+                    <input type="text" name="notes" class="form-control" placeholder="যেমন: স্বাভাবিক দিনের সমাপ্তি">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeDayCloseModal()" class="btn btn-secondary">বাতিল</button>
+                <button type="submit" id="reconcile-submit-btn" class="btn btn-warning" style="font-weight: 700;">
+                    ✓ দিন সমাপ্ত ও ব্যাকআপ সংরক্ষণ করুন
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script>
-        function openDayOpenModal() {
-            document.getElementById('day-open-modal').style.display = 'flex';
+<script>
+    function openDayOpenModal()  { document.getElementById('day-open-modal').style.display  = 'flex'; }
+    function closeDayOpenModal() { document.getElementById('day-open-modal').style.display  = 'none'; }
+    function openDayCloseModal() { document.getElementById('day-close-modal').style.display = 'flex'; updateExpectedCashLive(); }
+    function closeDayCloseModal(){ document.getElementById('day-close-modal').style.display = 'none'; }
+
+    const baseOpening = parseFloat('{{ day_reconciliation.opening_cash|default:"0" }}') || 0;
+    const baseCashRec = parseFloat('{{ day_reconciliation.cash_received|default:"0" }}') || 0;
+    const baseExpenses= parseFloat('{{ day_reconciliation.cash_expenses|default:"0" }}') || 0;
+    const baseRefunds = parseFloat('{{ day_reconciliation.returns_amount|default:"0" }}') || 0;
+
+    function updateExpectedCashLive() {
+        const otherInInput    = document.getElementById('reconcile-other-cash');
+        const actualInput     = document.getElementById('reconcile-actual-cash');
+        const diffBox         = document.getElementById('reconcile-diff-box');
+        const diffVal         = document.getElementById('reconcile-diff-val');
+        const diffMsg         = document.getElementById('reconcile-diff-msg');
+        const reasonInput     = document.getElementById('reconcile-discrepancy-reason');
+        const reasonLabel     = document.getElementById('reconcile-reason-label');
+        const expectedDisplay = document.getElementById('reconcile-expected-display');
+
+        const otherIn      = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
+        const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
+        if (expectedDisplay) {
+            expectedDisplay.textContent = '৳ ' + expectedCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-        function closeDayOpenModal() {
-            document.getElementById('day-open-modal').style.display = 'none';
-        }
-        function openDayCloseModal() {
-            document.getElementById('day-close-modal').style.display = 'flex';
-            updateExpectedCashLive();
-        }
-        function closeDayCloseModal() {
-            document.getElementById('day-close-modal').style.display = 'none';
+
+        if (!actualInput || actualInput.value.trim() === '') {
+            if (diffBox) diffBox.style.display = 'none';
+            return;
         }
 
-        const baseOpening = parseFloat('{{ day_reconciliation.opening_cash|default:"0" }}') || 0;
-        const baseCashRec = parseFloat('{{ day_reconciliation.cash_received|default:"0" }}') || 0;
-        const baseExpenses = parseFloat('{{ day_reconciliation.cash_expenses|default:"0" }}') || 0;
-        const baseRefunds = parseFloat('{{ day_reconciliation.returns_amount|default:"0" }}') || 0;
+        const actualCash = parseFloat(actualInput.value) || 0;
+        const diff       = actualCash - expectedCash;
+        const diffAbs    = Math.abs(diff).toFixed(2);
 
-        function updateExpectedCashLive() {
-            const otherInInput = document.getElementById('reconcile-other-cash');
-            const actualInput = document.getElementById('reconcile-actual-cash');
-            const diffBox = document.getElementById('reconcile-diff-box');
-            const diffVal = document.getElementById('reconcile-diff-val');
-            const diffMsg = document.getElementById('reconcile-diff-msg');
-            const reasonInput = document.getElementById('reconcile-discrepancy-reason');
-            const reasonLabel = document.getElementById('reconcile-reason-label');
-            const expectedDisplay = document.getElementById('reconcile-expected-display');
+        if (diffBox) diffBox.style.display = 'block';
 
-            const otherIn = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
-            const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
-            if (expectedDisplay) {
-                expectedDisplay.textContent = '৳ ' + expectedCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+        if (Math.abs(diff) < 0.005) {
+            diffBox.style.cssText = 'display:block;background:#dcfce7;border:1.5px solid #86efac;color:#166534;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
+            diffVal.textContent = '৳ 0.00 (ক্যাশ সমতা সম্পূর্ণ সঠিক)';
+            diffVal.style.color = '#15803d';
+            diffMsg.textContent = 'হাতে থাকা ক্যাশের সাথে সিস্টেমের প্রত্যাশিত ব্যালেন্স মিলে গেছে।';
+            if (reasonInput) { reasonInput.required = false; reasonInput.style.borderColor = ''; }
+            if (reasonLabel) reasonLabel.innerHTML = 'ক্যাশ গরমিল থাকলে কারণ:';
+        } else if (diff < 0) {
+            diffBox.style.cssText = 'display:block;background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
+            diffVal.textContent = `− ৳ ${diffAbs} (ক্যাশ ঘাটতি / Shortage)`;
+            diffVal.style.color = '#b91c1c';
+            diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে কম টাকা পাওয়া গেছে। কারণ উল্লেখ বাধ্যতামূলক।';
+            if (reasonInput) { reasonInput.required = true; reasonInput.style.borderColor = '#ef4444'; }
+            if (reasonLabel) reasonLabel.innerHTML = '<span style="color:#b91c1c;font-weight:700;">★ ক্যাশ ঘাটতির কারণ (বাধ্যতামূলক):</span>';
+        } else {
+            diffBox.style.cssText = 'display:block;background:#e0f2fe;border:1.5px solid #7dd3fc;color:#0369a1;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.95rem;';
+            diffVal.textContent = `+ ৳ ${diffAbs} (ক্যাশ বেশি / Surplus)`;
+            diffVal.style.color = '#0284c7';
+            diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে বেশি টাকা রয়েছে। কারণ উল্লেখ বাধ্যতামূলক।';
+            if (reasonInput) { reasonInput.required = true; reasonInput.style.borderColor = '#0284c7'; }
+            if (reasonLabel) reasonLabel.innerHTML = '<span style="color:#0369a1;font-weight:700;">★ অতিরিক্ত ক্যাশের কারণ (বাধ্যতামূলক):</span>';
+        }
+    }
 
-            if (!actualInput || actualInput.value.trim() === '') {
-                if (diffBox) diffBox.style.display = 'none';
-                return;
-            }
-
-            const actualCash = parseFloat(actualInput.value) || 0;
-            const diff = actualCash - expectedCash;
-            const diffAbs = Math.abs(diff).toFixed(2);
-
-            if (diffBox) diffBox.style.display = 'block';
-
-            if (Math.abs(diff) < 0.005) {
-                diffBox.style.backgroundColor = '#dcfce7';
-                diffBox.style.border = '1.5px solid #86efac';
-                diffBox.style.color = '#166534';
-                diffVal.textContent = '৳ 0.00 (ক্যাশ সমতা সম্পূর্ণ সঠিক)';
-                diffVal.style.color = '#15803d';
-                diffMsg.textContent = 'হাতে থাকা ক্যাশের সাথে সিস্টেমের প্রত্যাশিত ব্যালেন্স মিলে গেছে।';
-                if (reasonInput) {
-                    reasonInput.required = false;
-                    reasonInput.style.borderColor = '';
-                }
-                if (reasonLabel) reasonLabel.innerHTML = 'ক্যাশ গরমিল থাকলে কারণ (Discrepancy Reason):';
-            } else if (diff < 0) {
-                diffBox.style.backgroundColor = '#fee2e2';
-                diffBox.style.border = '1.5px solid #fca5a5';
-                diffBox.style.color = '#991b1b';
-                diffVal.textContent = `− ৳ ${diffAbs} (ক্যাশ ঘাটতি / Shortage)`;
-                diffVal.style.color = '#b91c1c';
-                diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে কম টাকা পাওয়া গেছে। গরমিলের কারণ উল্লেখ করা বাধ্যতামূলক।';
-                if (reasonInput) {
-                    reasonInput.required = true;
-                    reasonInput.style.borderColor = '#ef4444';
-                }
-                if (reasonLabel) reasonLabel.innerHTML = '<span style="color: #b91c1c; font-weight: 700;">★ ক্যাশ ঘাটতির কারণ (বাধ্যতামূলক):</span>';
-            } else {
-                diffBox.style.backgroundColor = '#e0f2fe';
-                diffBox.style.border = '1.5px solid #7dd3fc';
-                diffBox.style.color = '#0369a1';
-                diffVal.textContent = `+ ৳ ${diffAbs} (ক্যাশ বেশি / Surplus)`;
-                diffVal.style.color = '#0284c7';
-                diffMsg.textContent = '⚠️ ক্যাশ ড্রয়ারে বেশি টাকা রয়েছে। গরমিলের কারণ উল্লেখ করা বাধ্যতামূলক।';
-                if (reasonInput) {
-                    reasonInput.required = true;
-                    reasonInput.style.borderColor = '#0284c7';
-                }
-                if (reasonLabel) reasonLabel.innerHTML = '<span style="color: #0369a1; font-weight: 700;">★ অতিরিক্ত ক্যাশের কারণ (বাধ্যতামূলক):</span>';
+    function validateDayCloseForm() {
+        const actualInput  = document.getElementById('reconcile-actual-cash');
+        const otherInInput = document.getElementById('reconcile-other-cash');
+        const reasonInput  = document.getElementById('reconcile-discrepancy-reason');
+        const otherIn      = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
+        const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
+        const actualCash   = parseFloat(actualInput ? actualInput.value : 0) || 0;
+        const diff         = actualCash - expectedCash;
+        if (Math.abs(diff) >= 0.005) {
+            if (!reasonInput || !reasonInput.value.trim()) {
+                alert('ক্যাশ গরমিল রয়েছে (পার্থক্য: ৳ ' + diff.toFixed(2) + ')। অনুগ্রহ করে কারণ উল্লেখ করুন।');
+                if (reasonInput) reasonInput.focus();
+                return false;
             }
         }
+        return true;
+    }
+</script>
 
-        function validateDayCloseForm() {
-            const actualInput = document.getElementById('reconcile-actual-cash');
-            const otherInInput = document.getElementById('reconcile-other-cash');
-            const reasonInput = document.getElementById('reconcile-discrepancy-reason');
-
-            const otherIn = parseFloat(otherInInput ? otherInInput.value : 0) || 0;
-            const expectedCash = baseOpening + baseCashRec + otherIn - baseExpenses - baseRefunds;
-            const actualCash = parseFloat(actualInput ? actualInput.value : 0) || 0;
-            const diff = actualCash - expectedCash;
-
-            if (Math.abs(diff) >= 0.005) {
-                if (!reasonInput || !reasonInput.value.trim()) {
-                    alert('ক্যাশ গরমিল রয়েছে (পার্থক্য: ৳ ' + diff.toFixed(2) + ')। অনুগ্রহ করে কারণ উল্লেখ করুন।');
-                    if (reasonInput) reasonInput.focus();
-                    return false;
-                }
-            }
-            return true;
-        }
-    </script>
-    {% block extra_scripts %}{% endblock %}
+<script src="/static/js/sidebar.js"></script>
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>
